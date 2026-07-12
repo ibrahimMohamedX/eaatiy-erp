@@ -1,0 +1,281 @@
+"use client"
+
+import { useState } from "react"
+import { X, CalendarPlus, Search } from "lucide-react"
+import { users, searchPatients } from "@/lib/mock-data"
+import { deriveAge } from "@/lib/types"
+import type { Patient, User } from "@/lib/types"
+
+type Props = {
+  open: boolean
+  onClose: () => void
+}
+
+type FormData = {
+  patient_id: string
+  patient_name: string
+  doctor_id: string
+  type: "new" | "follow_up"
+  scheduled_date: string
+  scheduled_time: string
+}
+
+const initialForm: FormData = {
+  patient_id: "",
+  patient_name: "",
+  doctor_id: "",
+  type: "new",
+  scheduled_date: new Date().toISOString().slice(0, 10),
+  scheduled_time: "",
+}
+
+const labelClass = "mb-1 block text-xs font-medium text-[#111827]"
+const inputClass =
+  "h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20"
+
+const doctors = users.filter((u) => u.role === "doctor" && u.is_active)
+
+export function AppointmentModal({ open, onClose }: Props) {
+  const [form, setForm] = useState<FormData>(initialForm)
+  const [patientQuery, setPatientQuery] = useState("")
+  const [patientResults, setPatientResults] = useState<Patient[]>([])
+  const [showPatientDropdown, setShowPatientDropdown] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+
+  if (!open) return null
+
+  const today = new Date().toISOString().slice(0, 10)
+
+  function update<K extends keyof FormData>(key: K, value: FormData[K]) {
+    setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function searchPatient(q: string) {
+    setPatientQuery(q)
+    if (q.length >= 2) {
+      setPatientResults(searchPatients(q))
+      setShowPatientDropdown(true)
+    } else {
+      setPatientResults([])
+      setShowPatientDropdown(false)
+    }
+    if (q !== form.patient_name) {
+      update("patient_id", "")
+      update("patient_name", q)
+    }
+  }
+
+  function selectPatient(patient: Patient) {
+    update("patient_id", patient.id)
+    update("patient_name", patient.full_name)
+    setPatientQuery(patient.full_name)
+    setShowPatientDropdown(false)
+  }
+
+  function handleSubmit() {
+    console.log("Book appointment:", form)
+    setSubmitted(true)
+  }
+
+  function handleClose() {
+    setForm(initialForm)
+    setPatientQuery("")
+    setPatientResults([])
+    setSubmitted(false)
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#6B7280]/20 pt-[10vh] px-4">
+      <div className="relative w-full max-w-lg rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_2px_8px_rgba(17,24,39,0.06)]">
+        {/* Modal header */}
+        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-6 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F766E]/[0.08]">
+              <CalendarPlus className="h-[18px] w-[18px] text-[#0F766E]" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-[#111827]">New Appointment</h2>
+              <p className="text-xs text-[#6B7280]">Schedule a patient visit</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#6B7280] hover:text-[#111827]"
+          >
+            <X className="h-5 w-5" strokeWidth={1.5} />
+          </button>
+        </div>
+
+        {submitted ? (
+          <div className="flex flex-col items-center py-12 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#059669]/[0.12]">
+              <CalendarPlus className="h-6 w-6 text-[#059669]" strokeWidth={1.5} />
+            </div>
+            <p className="mt-4 text-sm font-semibold text-[#111827]">Appointment Booked</p>
+            <p className="mt-1 text-xs text-[#6B7280]">
+              {form.patient_name} ·{" "}
+              {form.scheduled_date} at {form.scheduled_time || "TBD"} ·{" "}
+              {doctors.find((d) => d.id === form.doctor_id)?.full_name ?? "TBD"}
+            </p>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="mt-6 rounded-[8px] bg-[#0F766E] px-6 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-4 p-6">
+              {/* Patient search */}
+              <div className="relative">
+                <label className={labelClass}>Patient *</label>
+                <div className="relative">
+                  <Search
+                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]"
+                    strokeWidth={1.5}
+                  />
+                  <input
+                    type="text"
+                    className={`${inputClass} pl-10`}
+                    placeholder="Search patient by name or phone…"
+                    value={patientQuery}
+                    onChange={(e) => searchPatient(e.target.value)}
+                    onFocus={() => {
+                      if (patientResults.length > 0) setShowPatientDropdown(true)
+                    }}
+                    onBlur={() => setTimeout(() => setShowPatientDropdown(false), 150)}
+                  />
+                </div>
+                {showPatientDropdown && patientResults.length > 0 && (
+                  <div className="absolute left-0 top-full z-20 mt-1 w-full overflow-hidden rounded-[8px] border border-[#E5E7EB] bg-white shadow-[0_2px_8px_rgba(17,24,39,0.06)]">
+                    {patientResults.map((p) => {
+                      const initials = p.full_name
+                        .split(" ")
+                        .map((w) => w[0])
+                        .join("")
+                        .toUpperCase()
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onMouseDown={() => selectPatient(p)}
+                          className={`flex w-full items-center gap-3 border-b border-[#E5E7EB] px-3 py-2.5 text-left last:border-b-0 ${
+                            form.patient_id === p.id
+                              ? "bg-[#0F766E]/[0.06]"
+                              : "hover:bg-[#F9FAFB]"
+                          }`}
+                        >
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] text-[10px] font-semibold text-[#6B7280]">
+                            {initials}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-[#111827]">{p.full_name}</p>
+                            <p className="text-xs text-[#6B7280]">
+                              {deriveAge(p.date_of_birth)} yrs · {p.phone}
+                            </p>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Doctor selector */}
+              <div>
+                <label className={labelClass}>Doctor *</label>
+                <select
+                  className={inputClass}
+                  value={form.doctor_id}
+                  onChange={(e) => update("doctor_id", e.target.value)}
+                >
+                  <option value="">Select doctor…</option>
+                  {doctors.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.full_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Visit type */}
+              <div>
+                <label className={labelClass}>Visit Type</label>
+                <div className="flex h-10 items-center rounded-[8px] border border-[#E5E7EB] bg-white p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => update("type", "new")}
+                    className={`h-8 flex-1 rounded-[6px] text-xs font-medium transition-colors ${
+                      form.type === "new"
+                        ? "bg-[#0F766E] text-white"
+                        : "text-[#6B7280] hover:text-[#111827]"
+                    }`}
+                  >
+                    New Patient
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => update("type", "follow_up")}
+                    className={`h-8 flex-1 rounded-[6px] text-xs font-medium transition-colors ${
+                      form.type === "follow_up"
+                        ? "bg-[#0F766E] text-white"
+                        : "text-[#6B7280] hover:text-[#111827]"
+                    }`}
+                  >
+                    Follow-up
+                  </button>
+                </div>
+              </div>
+
+              {/* Date + Time row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Date *</label>
+                  <input
+                    type="date"
+                    className={inputClass}
+                    value={form.scheduled_date}
+                    min={today}
+                    onChange={(e) => update("scheduled_date", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Time *</label>
+                  <input
+                    type="time"
+                    className={inputClass}
+                    value={form.scheduled_time}
+                    onChange={(e) => update("scheduled_time", e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-3 border-t border-[#E5E7EB] px-6 py-4">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!form.patient_id || !form.doctor_id || !form.scheduled_time}
+                className="rounded-[8px] bg-[#0F766E] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                Book Appointment
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
