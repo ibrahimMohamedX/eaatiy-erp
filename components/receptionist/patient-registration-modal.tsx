@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { X, UserPlus } from "lucide-react"
+import { useT } from "@/lib/i18n/use-t"
 
 type Props = {
   open: boolean
@@ -34,11 +35,12 @@ const initialForm: FormData = {
   emergency_phone: "",
 }
 
-const labelClass = "mb-1 block text-xs font-medium text-[#111827]"
+const labelClass = "mb-1 block text-xs font-medium text-[#111827] dark:text-[#F9FAFB]"
 const inputClass =
-  "h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20"
+  "h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF]"
 
 export function PatientRegistrationModal({ open, onClose }: Props) {
+  const { t } = useT()
   const [form, setForm] = useState<FormData>(initialForm)
   const [submitted, setSubmitted] = useState(false)
 
@@ -61,23 +63,23 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#6B7280]/20 pt-[10vh] px-4">
-      <div className="relative w-full max-w-xl rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_2px_8px_rgba(17,24,39,0.06)]">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#6B7280]/20 pt-[10vh] px-4 dark:bg-[#111827]/60">
+      <div className="relative w-full max-w-xl rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_2px_8px_rgba(17,24,39,0.06)] dark:border-[#374151] dark:bg-[#1F2937] dark:shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
         {/* Modal header */}
-        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-6 py-4">
+        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-6 py-4 dark:border-[#374151]">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F766E]/[0.08]">
               <UserPlus className="h-[18px] w-[18px] text-[#0F766E]" strokeWidth={1.5} />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-[#111827]">Register New Patient</h2>
-              <p className="text-xs text-[#6B7280]">Add a patient to the clinic roster</p>
+              <h2 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.receptionist.registerPatientTitle}</h2>
+              <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.receptionist.registerPatientDesc}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#6B7280] hover:text-[#111827]"
+            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#6B7280] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
           >
             <X className="h-5 w-5" strokeWidth={1.5} />
           </button>
@@ -88,16 +90,16 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#059669]/[0.12]">
               <UserPlus className="h-6 w-6 text-[#059669]" strokeWidth={1.5} />
             </div>
-            <p className="mt-4 text-sm font-semibold text-[#111827]">Patient Registered</p>
-            <p className="mt-1 text-xs text-[#6B7280]">
-              {form.full_name} has been added to the clinic roster.
+            <p className="mt-4 text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.receptionist.patientRegistered}</p>
+            <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+              {t.receptionist.patientRegisteredDesc.replace("{name}", form.full_name)}
             </p>
             <button
               type="button"
               onClick={handleClose}
               className="mt-6 rounded-[8px] bg-[#0F766E] px-6 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
-              Done
+              {t.common.done}
             </button>
           </div>
         ) : (
@@ -106,7 +108,7 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
             <div className="grid grid-cols-2 gap-4 p-6">
               {/* Full Name */}
               <div className="col-span-2">
-                <label className={labelClass}>Full Name *</label>
+                <label className={labelClass}>{t.receptionist.fullName} *</label>
                 <input
                   type="text"
                   className={inputClass}
@@ -118,7 +120,7 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
 
               {/* Date of Birth */}
               <div>
-                <label className={labelClass}>Date of Birth *</label>
+                <label className={labelClass}>{t.receptionist.dateOfBirth} *</label>
                 <input
                   type="date"
                   className={inputClass}
@@ -129,22 +131,22 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
 
               {/* Gender */}
               <div>
-                <label className={labelClass}>Gender</label>
+                <label className={labelClass}>{t.receptionist.gender}</label>
                 <select
                   className={inputClass}
                   value={form.gender}
                   onChange={(e) => update("gender", e.target.value)}
                 >
                   <option value="">Select…</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
+                  <option value="male">{t.common.male}</option>
+                  <option value="female">{t.common.female}</option>
+                  <option value="other">{t.common.other}</option>
                 </select>
               </div>
 
               {/* Phone */}
               <div>
-                <label className={labelClass}>Phone *</label>
+                <label className={labelClass}>{t.receptionist.phone} *</label>
                 <input
                   type="tel"
                   className={inputClass}
@@ -156,7 +158,7 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
 
               {/* Email */}
               <div>
-                <label className={labelClass}>Email</label>
+                <label className={labelClass}>{t.receptionist.email}</label>
                 <input
                   type="email"
                   className={inputClass}
@@ -168,7 +170,7 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
 
               {/* Blood Group */}
               <div>
-                <label className={labelClass}>Blood Group</label>
+                <label className={labelClass}>{t.receptionist.bloodGroup}</label>
                 <select
                   className={inputClass}
                   value={form.blood_group}
@@ -188,7 +190,7 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
 
               {/* Allergies */}
               <div>
-                <label className={labelClass}>Allergies</label>
+                <label className={labelClass}>{t.receptionist.allergies}</label>
                 <input
                   type="text"
                   className={inputClass}
@@ -200,7 +202,7 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
 
               {/* Address */}
               <div className="col-span-2">
-                <label className={labelClass}>Address</label>
+                <label className={labelClass}>{t.receptionist.address}</label>
                 <input
                   type="text"
                   className={inputClass}
@@ -211,15 +213,15 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
               </div>
 
               {/* Divider */}
-              <div className="col-span-2 mt-2 border-t border-[#E5E7EB] pt-3">
-                <p className="text-xs font-semibold text-[#6B7280]">
-                  Emergency Contact (optional)
+              <div className="col-span-2 mt-2 border-t border-[#E5E7EB] pt-3 dark:border-[#374151]">
+                <p className="text-xs font-semibold text-[#6B7280] dark:text-[#9CA3AF]">
+                  {t.receptionist.emergencyContact}
                 </p>
               </div>
 
               {/* Emergency Name */}
               <div>
-                <label className={labelClass}>Contact Name</label>
+                <label className={labelClass}>{t.receptionist.emergencyName}</label>
                 <input
                   type="text"
                   className={inputClass}
@@ -231,7 +233,7 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
 
               {/* Emergency Phone */}
               <div>
-                <label className={labelClass}>Contact Phone</label>
+                <label className={labelClass}>{t.receptionist.emergencyPhone}</label>
                 <input
                   type="tel"
                   className={inputClass}
@@ -243,13 +245,13 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-3 border-t border-[#E5E7EB] px-6 py-4">
+            <div className="flex justify-end gap-3 border-t border-[#E5E7EB] px-6 py-4 dark:border-[#374151]">
               <button
                 type="button"
                 onClick={handleClose}
-                className="rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB]"
+                className="rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
               >
-                Cancel
+                {t.common.cancel}
               </button>
               <button
                 type="button"
@@ -257,7 +259,7 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
                 disabled={!form.full_name || !form.date_of_birth || !form.phone}
                 className="rounded-[8px] bg-[#0F766E] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                Register Patient
+                {t.receptionist.registerNewPatient}
               </button>
             </div>
           </>

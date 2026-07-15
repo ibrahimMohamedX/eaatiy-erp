@@ -105,3 +105,17 @@ export function tKey(
 export function useDirection(locale: Locale) {
   return useMemo(() => LOCALE_CONFIGS[locale], [locale])
 }
+
+/**
+ * Resolves a StatusMeta.labelKey through the translation dictionary.
+ * Falls back to the hardcoded `label` field when the key path is missing.
+ */
+export function resolveLabel(keyPath: string, t: Record<string, any>): string {
+  const parts = keyPath.split(".")
+  let current: any = t
+  for (const part of parts) {
+    if (current == null || typeof current !== "object") return keyPath
+    current = current[part]
+  }
+  return typeof current === "string" ? current : keyPath
+}

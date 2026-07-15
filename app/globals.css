@@ -162,3 +162,29 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * RTL (Right-to-Left) Language Support
+ * ---------------------------------------------------------------------------
+ * Tailwind v4 uses CSS logical properties by default (start/end instead of
+ * left/right), so most RTL mirroring is automatic. These are the remaining
+ * manual overrides needed for a smooth Arabic experience.
+ * --------------------------------------------------------------------------- */
+
+@layer utilities {
+  /* Font family switch for Arabic — Inter + system Arabic fallback */
+  .dir-rtl {
+    --font-sans: 'Inter', 'Noto Naskh Arabic', 'Scheherazade New', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  /* Numeric values stay LTR even in RTL context (phone numbers, stats) */
+  .dir-rtl .ltr-in-rtl {
+    direction: ltr;
+    display: inline-block;
+  }
+
+  /* Stepper arrows: flip ChevronRight → ChevronLeft visually */
+  .dir-rtl .rtl-mirror-icon svg {
+    transform: scaleX(-1);
+  }
+}

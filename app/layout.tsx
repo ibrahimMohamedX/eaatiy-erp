@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -45,9 +46,36 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} bg-[#F9FAFB]`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} bg-[#F9FAFB]`}>
+      <head>
+        {/* Inline script to apply dark/light class BEFORE first paint — avoids flash of wrong theme.
+            Placed in <head> as a raw HTML injection so it executes before React hydrates.
+            WARNING: Keep this script minimal — no imports, no closures, no external references. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function() {
+  try {
+    var theme = localStorage.getItem('clinic-theme') || 'system';
+    var resolved = theme;
+    if (theme === 'system') {
+      resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    if (resolved === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.add('light');
+    }
+  } catch(e) {
+    document.documentElement.classList.add('light');
+  }
+})();
+`.trim(),
+          }}
+        />
+      </head>
       <body className="font-sans antialiased">
-        {children}
+        <Providers>{children}</Providers>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

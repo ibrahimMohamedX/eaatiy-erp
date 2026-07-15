@@ -191,29 +191,30 @@ export interface AuditLog {
 
 /** Status metadata for rendering pills/badges */
 export interface StatusMeta {
-  label: string
+  labelKey: string // dictionary dot-path key (e.g. "status.waiting") — resolved via useT()
+  label: string // DEPRECATED: hardcoded English fallback, still used by non-i18n consumers
   color: string // hex color for text + dot
 }
 
 /** Mapping from AppointmentStatus to display metadata */
 export const APPOINTMENT_STATUS_META: Record<AppointmentStatus, StatusMeta> = {
-  waiting: { label: "Waiting", color: "#D97706" },
-  in_consultation: { label: "In Consultation", color: "#2563EB" },
-  completed: { label: "Completed", color: "#059669" },
-  cancelled: { label: "Cancelled", color: "#DC2626" },
+  waiting: { labelKey: "status.waiting", label: "Waiting", color: "#D97706" },
+  in_consultation: { labelKey: "status.inConsultation", label: "In Consultation", color: "#2563EB" },
+  completed: { labelKey: "status.completed", label: "Completed", color: "#059669" },
+  cancelled: { labelKey: "status.cancelled", label: "Cancelled", color: "#DC2626" },
 }
 
 /** Mapping from AuditAction to display metadata */
 export const AUDIT_ACTION_META: Record<AuditAction, StatusMeta> = {
-  insert: { label: "Insert", color: "#059669" },
-  update: { label: "Update", color: "#2563EB" },
-  delete: { label: "Delete", color: "#DC2626" },
+  insert: { labelKey: "status.insert", label: "Insert", color: "#059669" },
+  update: { labelKey: "status.update", label: "Update", color: "#2563EB" },
+  delete: { labelKey: "status.delete", label: "Delete", color: "#DC2626" },
 }
 
 /** Mapping from PaymentStatus to display metadata */
 export const PAYMENT_STATUS_META: Record<PaymentStatus, StatusMeta> = {
-  paid: { label: "Paid", color: "#059669" },
-  unpaid: { label: "Unpaid", color: "#D97706" },
+  paid: { labelKey: "status.paid", label: "Paid", color: "#059669" },
+  unpaid: { labelKey: "status.unpaid", label: "Unpaid", color: "#D97706" },
 }
 
 // ---------------------------------------------------------------------------

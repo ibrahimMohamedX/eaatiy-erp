@@ -1,5 +1,7 @@
 "use client"
 
+"use client"
+
 import {
   Area,
   AreaChart,
@@ -13,6 +15,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
+import { useT } from "@/lib/i18n/use-t"
 
 /* ------------------------------- Revenue chart ------------------------------- */
 
@@ -23,13 +26,13 @@ const revenueData = Array.from({ length: 30 }, (_, i) => {
   return { day: `${day}`, paid, outstanding }
 })
 
-function RevenueTooltip({ active, payload, label }: any) {
+function RevenueTooltip({ active, payload, label, dayLabel }: any) {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 shadow-[0_2px_8px_rgba(17,24,39,0.06)]">
-      <div className="mb-1 text-[11px] font-medium text-[#6B7280]">Day {label}</div>
+    <div className="rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 shadow-[0_2px_8px_rgba(17,24,39,0.06)] dark:border-[#374151] dark:bg-[#1F2937] dark:shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
+      <div className="mb-1 text-[11px] font-medium text-[#6B7280] dark:text-[#9CA3AF]">{dayLabel} {label}</div>
       {payload.map((p: any) => (
-        <div key={p.dataKey} className="flex items-center gap-2 text-xs text-[#111827]">
+        <div key={p.dataKey} className="flex items-center gap-2 text-xs text-[#111827] dark:text-[#F9FAFB]">
           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.color }} />
           <span className="capitalize">{p.dataKey}</span>
           <span className="ml-auto font-medium">${p.value.toLocaleString()}</span>
@@ -40,22 +43,23 @@ function RevenueTooltip({ active, payload, label }: any) {
 }
 
 export function RevenueChart() {
+  const { t } = useT()
   return (
-    <div className="flex h-full flex-col rounded-xl border border-[#E5E7EB] bg-white p-5">
+    <div className="flex h-full flex-col rounded-xl border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-[#111827]">Revenue</h3>
-          <p className="mt-0.5 text-xs text-[#6B7280]">Last 30 days</p>
+          <h3 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.admin.revenue}</h3>
+          <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF] dark:text-[#9CA3AF]">{t.admin.revenueLast30}</p>
         </div>
         {/* Legend */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="h-0.5 w-4 rounded-full bg-[#0F766E]" />
-            <span className="text-xs text-[#6B7280]">Paid</span>
+            <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF] dark:text-[#9CA3AF]">{t.admin.paid}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-0 w-4 border-t-2 border-dashed border-[#D97706]" />
-            <span className="text-xs text-[#6B7280]">Outstanding</span>
+            <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF] dark:text-[#9CA3AF]">{t.admin.outstanding}</span>
           </div>
         </div>
       </div>
@@ -84,7 +88,7 @@ export function RevenueChart() {
               tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
               width={56}
             />
-            <Tooltip content={<RevenueTooltip />} cursor={{ stroke: "#E5E7EB" }} />
+            <Tooltip content={<RevenueTooltip dayLabel={t.admin.day} />} cursor={{ stroke: "#E5E7EB" }} />
             <Area
               type="monotone"
               dataKey="paid"
@@ -122,11 +126,12 @@ const statusData = [
 const statusTotal = statusData.reduce((s, d) => s + d.value, 0)
 
 export function StatusDonut() {
+  const { t } = useT()
   return (
-    <div className="flex h-full flex-col rounded-xl border border-[#E5E7EB] bg-white p-5">
+    <div className="flex h-full flex-col rounded-xl border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
       <div>
-        <h3 className="text-sm font-semibold text-[#111827]">Appointment Status</h3>
-        <p className="mt-0.5 text-xs text-[#6B7280]">Distribution today</p>
+        <h3 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.admin.appointmentStatus}</h3>
+        <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF] dark:text-[#9CA3AF]">{t.admin.distributionToday}</p>
       </div>
 
       <div className="relative mt-2 h-40">
@@ -150,8 +155,8 @@ export function StatusDonut() {
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-semibold tracking-tight text-[#111827]">{statusTotal}</span>
-          <span className="text-[11px] text-[#6B7280]">Total</span>
+          <span className="text-2xl font-semibold tracking-tight text-[#111827] dark:text-[#F9FAFB]">{statusTotal}</span>
+          <span className="text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{t.admin.total}</span>
         </div>
       </div>
 
@@ -182,11 +187,12 @@ const doctorData = [
 const maxCount = Math.max(...doctorData.map((d) => d.count))
 
 export function AppointmentsPerDoctor() {
+  const { t } = useT()
   return (
-    <div className="rounded-xl border border-[#E5E7EB] bg-white p-5">
+    <div className="rounded-xl border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
       <div>
-        <h3 className="text-sm font-semibold text-[#111827]">Appointments per Doctor</h3>
-        <p className="mt-0.5 text-xs text-[#6B7280]">Last 30 days</p>
+        <h3 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.admin.appointmentsPerDoctor}</h3>
+        <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF] dark:text-[#9CA3AF]">{t.admin.appointmentsPerDoctorPeriod}</p>
       </div>
 
       <div className="mt-4 flex flex-col gap-4">
@@ -194,14 +200,14 @@ export function AppointmentsPerDoctor() {
           <div key={d.name} className="flex items-center gap-3">
             {/* Left axis: avatar + name */}
             <div className="flex w-44 shrink-0 items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F9FAFB] text-[11px] font-semibold text-[#6B7280] ring-1 ring-[#E5E7EB]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F9FAFB] dark:bg-[#374151] dark:bg-[#374151] text-[11px] font-semibold text-[#6B7280] ring-1 ring-[#E5E7EB] dark:bg-[#374151] dark:text-[#9CA3AF] dark:ring-[#374151]">
                 {d.initials}
               </span>
-              <span className="truncate text-sm text-[#111827]">{d.name}</span>
+              <span className="truncate text-sm text-[#111827] dark:text-[#F9FAFB]">{d.name}</span>
             </div>
             {/* Bar track */}
             <div className="flex flex-1 items-center gap-3">
-              <div className="h-6 flex-1 overflow-hidden rounded-md bg-[#F9FAFB]">
+              <div className="h-6 flex-1 overflow-hidden rounded-md bg-[#F9FAFB] dark:bg-[#374151] dark:bg-[#374151]">
                 <div
                   className="h-full rounded-md bg-[#0F766E]"
                   style={{ width: `${(d.count / maxCount) * 100}%` }}

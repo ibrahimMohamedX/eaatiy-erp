@@ -10,6 +10,7 @@ import {
 } from "@/lib/mock-data"
 import { deriveAge, APPOINTMENT_STATUS_META } from "@/lib/types"
 import type { Appointment } from "@/lib/types"
+import { useT, resolveLabel } from "@/lib/i18n/use-t"
 
 /**
  * Doctor's "My Queue" left rail — independently scrollable list of today's
@@ -23,10 +24,12 @@ function QueueCard({
   appointment,
   isSelected,
   onSelect,
+  t,
 }: {
   appointment: Appointment
   isSelected: boolean
   onSelect: () => void
+  t: Record<string, any>
 }) {
   const patient = getPatient(appointment.patient_id)
   const doctor = getUser(appointment.doctor_id)
@@ -43,8 +46,8 @@ function QueueCard({
       onClick={onSelect}
       className={`w-full rounded-[12px] border p-4 text-left transition-colors ${
         isSelected
-          ? "border-[#0F766E] bg-[#F9FAFB]"
-          : "border-[#E5E7EB] bg-white hover:border-[#0F766E]/40"
+          ? "border-[#0F766E] bg-[#F9FAFB] dark:border-[#0F766E] dark:bg-[#374151]"
+          : "border-[#E5E7EB] bg-white hover:border-[#0F766E]/40 dark:border-[#374151] dark:bg-[#1F2937] dark:hover:border-[#0F766E]/60"
       }`}
     >
       {/* Top row: queue# + name + status */}
@@ -55,12 +58,12 @@ function QueueCard({
             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${
               isActive
                 ? "border-[#0F766E] bg-[#0F766E] text-white"
-                : "border-[#E5E7EB] text-[#6B7280]"
+                : "border-[#E5E7EB] text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]"
             }`}
           >
             {appointment.queue_number}
           </span>
-          <p className="text-sm font-semibold text-[#111827]">
+          <p className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">
             {patient.full_name}
           </p>
         </div>
@@ -82,18 +85,18 @@ function QueueCard({
           }}
         >
           <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: meta.color }} />
-          {meta.label}
+          {resolveLabel(meta.labelKey, t)}
         </span>
       </div>
 
       {/* Detail row */}
-      <div className="mt-2 flex items-center gap-3 text-xs text-[#6B7280]">
+      <div className="mt-2 flex items-center gap-3 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
         <span>
           {age} yrs · {patient.gender}
         </span>
-        <span className="h-3 w-px bg-[#E5E7EB]" />
-        <span>{appointment.type === "new" ? "New Patient" : "Follow-up"}</span>
-        <span className="h-3 w-px bg-[#E5E7EB]" />
+        <span className="h-3 w-px bg-[#E5E7EB] dark:bg-[#374151]" />
+        <span>{appointment.type === "new" ? t.doctor.newPatientLabel : t.doctor.followUpLabel}</span>
+        <span className="h-3 w-px bg-[#E5E7EB] dark:bg-[#374151]" />
         <span>
           {appointment.scheduled_start.slice(11, 16)}
         </span>
@@ -103,16 +106,16 @@ function QueueCard({
       {doctor && (
         <div className="mt-2.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#E5E7EB] text-[10px] font-semibold text-[#6B7280]">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#E5E7EB] text-[10px] font-semibold text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
               {getDoctorInitials(doctor)}
             </span>
-            <span className="text-xs text-[#6B7280]">{doctor.full_name}</span>
+            <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">{doctor.full_name}</span>
           </div>
 
           {isWaiting && (
             <span className="inline-flex items-center gap-1 rounded-[6px] bg-[#0F766E]/[0.08] px-2 py-1 text-xs font-medium text-[#0F766E]">
               <Stethoscope className="h-3.5 w-3.5" strokeWidth={1.5} />
-              Call next
+              {t.receptionist.callNext}
             </span>
           )}
         </div>
@@ -122,6 +125,7 @@ function QueueCard({
 }
 
 export function QueueRail() {
+  const { t } = useT()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const appointments = getTodayAppointments(DOCTOR_ID)
   const activeAppointments = appointments.filter(
@@ -131,10 +135,10 @@ export function QueueRail() {
   return (
     <div className="flex h-full w-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-4">
+      <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-4 dark:border-[#374151]">
         <div className="flex items-center gap-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">
-            My Queue
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280] dark:text-[#9CA3AF]">
+            {t.doctor.myQueue}
           </p>
           <span className="flex h-5 items-center justify-center rounded-full bg-[#0F766E]/[0.12] px-1.5 text-[11px] font-semibold text-[#0F766E]">
             {activeAppointments.length}
@@ -144,8 +148,8 @@ export function QueueRail() {
         {/* Quick call icon */}
         <button
           type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#E5E7EB] text-[#6B7280] transition-colors hover:text-[#0F766E]"
-          aria-label="Call next patient"
+          className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#E5E7EB] text-[#6B7280] transition-colors hover:text-[#0F766E] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:text-[#0F766E]"
+          aria-label={t.receptionist.callNext}
         >
           <PhoneCall className="h-[18px] w-[18px]" strokeWidth={1.5} />
         </button>
@@ -156,12 +160,12 @@ export function QueueRail() {
         {activeAppointments.length === 0 ? (
           <div className="flex h-full items-center justify-center p-6">
             <div className="text-center">
-              <Stethoscope className="mx-auto h-8 w-8 text-[#E5E7EB]" strokeWidth={1.5} />
-              <p className="mt-3 text-sm font-medium text-[#6B7280]">
-                No patients in queue
+              <Stethoscope className="mx-auto h-8 w-8 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
+              <p className="mt-3 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+                {t.doctor.queueEmpty}
               </p>
-              <p className="mt-1 text-xs text-[#6B7280]">
-                Your queue is clear for today
+              <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                {t.doctor.queueEmptyDesc}
               </p>
             </div>
           </div>
@@ -173,6 +177,7 @@ export function QueueRail() {
                 appointment={apt}
                 isSelected={selectedId === apt.id}
                 onSelect={() => setSelectedId(apt.id)}
+                t={t}
               />
             ))}
           </div>

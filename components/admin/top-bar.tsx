@@ -1,17 +1,7 @@
 "use client"
 
 import { useState } from "react"
-
-const ranges = [
-  "Today",
-  "Yesterday",
-  "7 Days",
-  "30 Days",
-  "90 Days",
-  "This Month",
-  "This Year",
-  "Custom",
-]
+import { useT } from "@/lib/i18n/use-t"
 
 /**
  * Admin Top Bar — page title + functional date-range pill filters.
@@ -25,6 +15,8 @@ export function AdminTopBar({
   activeRange: string
   onRangeChange?: (range: string) => void
 }) {
+  const { t } = useT()
+  const ranges: string[] = t.admin.dateRanges
   const [localActive, setLocalActive] = useState(activeRange)
 
   function handleChange(range: string) {
@@ -33,10 +25,10 @@ export function AdminTopBar({
   }
 
   return (
-    <header className="flex h-16 items-center justify-between gap-4 border-b border-[#E5E7EB] bg-white px-6">
+    <header className="flex h-16 items-center justify-between gap-4 border-b border-[#E5E7EB] bg-white px-6 dark:border-[#374151] dark:bg-[#1F2937]">
       {/* Page title left */}
-      <h1 className="shrink-0 text-base font-semibold text-[#111827]">
-        Analytics &amp; Auditing
+      <h1 className="shrink-0 text-base font-semibold text-[#111827] dark:text-[#F9FAFB]">
+        {t.admin.analyticsAuditing}
       </h1>
 
       {/* Date-range pill-tab row */}
@@ -51,7 +43,7 @@ export function AdminTopBar({
               className={`h-8 shrink-0 rounded-full px-3 text-[13px] transition-colors ${
                 active
                   ? "bg-[#0F766E] font-medium text-white"
-                  : "border border-[#E5E7EB] font-normal text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827]"
+                  : "border border-[#E5E7EB] font-normal text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:bg-[#374151] dark:hover:text-[#E5E7EB]"
               }`}
             >
               {range}
