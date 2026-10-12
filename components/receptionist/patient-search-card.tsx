@@ -2,19 +2,34 @@
 
 import { useState } from "react"
 import { Search } from "lucide-react"
-import { searchPatients } from "@/lib/mock-data"
 import { deriveAge } from "@/lib/types"
+import type { Patient } from "@/lib/types"
 import { useT } from "@/lib/i18n/use-t"
+import { searchPatients } from "@/lib/actions/receptionist/search-patients"
 
 /**
  * Patient search card panel — inline search with dropdown results.
- * Shares the same searchPatients helper as the top bar.
+ * Calls the server action which queries the tenant database via header context.
  */
 export function PatientSearchCard() {
   const { t } = useT()
   const [query, setQuery] = useState("")
+  const [results, setResults] = useState<Patient[]>([])
+  const [loading, setLoading] = useState(false)
 
-  const results = query.length >= 2 ? searchPatients(query) : []
+  async function handleSearch(q: string) {
+    setQuery(q)
+    if (q.length < 2) {
+      setResults([])
+      return
+    }
+    setLoading(true)
+    const res = await searchPatients(q)
+    if (res.success) {
+      setResults(res.data)
+    }
+    setLoading(false)
+  }
 
   return (
     <div className="flex flex-col rounded-[12px] border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
@@ -29,7 +44,7 @@ export function PatientSearchCard() {
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => handleSearch(e.target.value)}
           placeholder={t.common.searchPatientPlaceholder}
           className="h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white pl-10 pr-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF]"
         />

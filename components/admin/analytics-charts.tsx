@@ -1,7 +1,5 @@
 "use client"
 
-"use client"
-
 import {
   Area,
   AreaChart,
@@ -16,15 +14,9 @@ import {
   YAxis,
 } from "recharts"
 import { useT } from "@/lib/i18n/use-t"
+import type { DashboardData } from "@/lib/actions/admin/get-dashboard-data"
 
 /* ------------------------------- Revenue chart ------------------------------- */
-
-const revenueData = Array.from({ length: 30 }, (_, i) => {
-  const day = i + 1
-  const paid = Math.round(900 + Math.sin(i / 3) * 380 + i * 34 + (i % 5) * 60)
-  const outstanding = Math.round(220 + Math.cos(i / 4) * 90 + (i % 7) * 22)
-  return { day: `${day}`, paid, outstanding }
-})
 
 function RevenueTooltip({ active, payload, label, dayLabel }: any) {
   if (!active || !payload?.length) return null
@@ -42,31 +34,42 @@ function RevenueTooltip({ active, payload, label, dayLabel }: any) {
   )
 }
 
-export function RevenueChart() {
+type RevenueChartProps = {
+  data: DashboardData | null
+}
+
+export function RevenueChart({ data }: RevenueChartProps) {
   const { t } = useT()
+
+  const chartData = data?.revenueOverTime?.map((p) => ({
+    date: p.date.slice(5), // "MM-DD" label
+    paid: p.paid,
+    outstanding: p.outstanding,
+  })) ?? []
+
   return (
     <div className="flex h-full flex-col rounded-xl border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.admin.revenue}</h3>
-          <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF] dark:text-[#9CA3AF]">{t.admin.revenueLast30}</p>
+          <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.admin.revenueLast30}</p>
         </div>
         {/* Legend */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="h-0.5 w-4 rounded-full bg-[#0F766E]" />
-            <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF] dark:text-[#9CA3AF]">{t.admin.paid}</span>
+            <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.admin.paid}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-0 w-4 border-t-2 border-dashed border-[#D97706]" />
-            <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF] dark:text-[#9CA3AF]">{t.admin.outstanding}</span>
+            <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.admin.outstanding}</span>
           </div>
         </div>
       </div>
 
       <div className="mt-4 flex-1">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={revenueData} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
             <defs>
               <linearGradient id="paidFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#0F766E" stopOpacity={0.18} />
@@ -75,7 +78,7 @@ export function RevenueChart() {
             </defs>
             <CartesianGrid vertical={false} stroke="#E5E7EB" strokeDasharray="3 3" />
             <XAxis
-              dataKey="day"
+              dataKey="date"
               tickLine={false}
               axisLine={false}
               tick={{ fill: "#6B7280", fontSize: 11 }}
@@ -116,29 +119,50 @@ export function RevenueChart() {
 
 /* ------------------------------- Status donut ------------------------------- */
 
-const statusData = [
-  { name: "Completed", value: 186, color: "#059669" },
-  { name: "Waiting", value: 64, color: "#D97706" },
-  { name: "In Consultation", value: 43, color: "#2563EB" },
-  { name: "Cancelled", value: 19, color: "#DC2626" },
-]
+const STATUS_COLORS: Record<string, string> = {
+  completed: "#059669",
+  waiting: "#D97706",
+  inConsultation: "#2563EB",
+  cancelled: "#DC2626",
+}
 
-const statusTotal = statusData.reduce((s, d) => s + d.value, 0)
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  completed: "status.completed",
+  waiting: "status.waiting",
+  inConsultation: "status.inConsultation",
+  cancelled: "status.cancelled",
+}
 
-export function StatusDonut() {
+type StatusDonutProps = {
+  data: DashboardData | null
+}
+
+export function StatusDonut({ data }: StatusDonutProps) {
   const { t } = useT()
+
+  const entries = data
+    ? [
+        { name: "Completed", key: "completed", value: data.statusDistribution.completed, color: STATUS_COLORS.completed },
+        { name: "Waiting", key: "waiting", value: data.statusDistribution.waiting, color: STATUS_COLORS.waiting },
+        { name: "In Consultation", key: "inConsultation", value: data.statusDistribution.inConsultation, color: STATUS_COLORS.inConsultation },
+        { name: "Cancelled", key: "cancelled", value: data.statusDistribution.cancelled, color: STATUS_COLORS.cancelled },
+      ]
+    : []
+
+  const total = entries.reduce((s, d) => s + d.value, 0)
+
   return (
     <div className="flex h-full flex-col rounded-xl border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
       <div>
         <h3 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.admin.appointmentStatus}</h3>
-        <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF] dark:text-[#9CA3AF]">{t.admin.distributionToday}</p>
+        <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.admin.distributionToday}</p>
       </div>
 
       <div className="relative mt-2 h-40">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={statusData}
+              data={entries}
               dataKey="value"
               nameKey="name"
               cx="50%"
@@ -148,25 +172,25 @@ export function StatusDonut() {
               paddingAngle={2}
               stroke="none"
             >
-              {statusData.map((d) => (
+              {entries.map((d) => (
                 <Cell key={d.name} fill={d.color} />
               ))}
             </Pie>
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-semibold tracking-tight text-[#111827] dark:text-[#F9FAFB]">{statusTotal}</span>
+          <span className="text-2xl font-semibold tracking-tight text-[#111827] dark:text-[#F9FAFB]">{total}</span>
           <span className="text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{t.admin.total}</span>
         </div>
       </div>
 
       <ul className="mt-3 flex flex-col gap-2">
-        {statusData.map((d) => (
+        {entries.map((d) => (
           <li key={d.name} className="flex items-center gap-2 text-xs">
             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d.color }} />
-            <span className="text-[#6B7280]">{d.name}</span>
-            <span className="ml-auto font-medium text-[#111827]">
-              {Math.round((d.value / statusTotal) * 100)}%
+            <span className="text-[#6B7280] dark:text-[#9CA3AF]">{d.name}</span>
+            <span className="ml-auto font-medium text-[#111827] dark:text-[#F9FAFB]">
+              {total > 0 ? `${Math.round((d.value / total) * 100)}%` : "0%"}
             </span>
           </li>
         ))}
@@ -177,43 +201,65 @@ export function StatusDonut() {
 
 /* -------------------------- Appointments per doctor -------------------------- */
 
-const doctorData = [
-  { name: "Dr. Sara Reyes", initials: "SR", count: 94 },
-  { name: "Dr. Amir Khan", initials: "AK", count: 78 },
-  { name: "Dr. Lena Osei", initials: "LO", count: 71 },
-  { name: "Dr. Marco Bianchi", initials: "MB", count: 69 },
-]
+type AppointmentsPerDoctorProps = {
+  data: DashboardData | null
+}
 
-const maxCount = Math.max(...doctorData.map((d) => d.count))
-
-export function AppointmentsPerDoctor() {
+export function AppointmentsPerDoctor({ data }: AppointmentsPerDoctorProps) {
   const { t } = useT()
+
+  // For the doctor performance bar chart, we use the appointmentsPerDoctor data
+  // along with doctor name resolution from the appointments data
+  // Note: v1 shows count only — doctor names need separate resolution.
+  // We display "Doctor ID" placeholder for now; future enhancement will
+  // join users table for names.
+
+  const doctorEntries = (data?.appointmentsPerDoctor ?? []).map((d) => ({
+    name: `Doctor ${d.doctorId.slice(0, 4)}…`,
+    initials: "?",
+    count: d.count,
+  }))
+
+  const maxCount = Math.max(0, ...doctorEntries.map((d) => d.count))
+
+  if (doctorEntries.length === 0) {
+    return (
+      <div className="rounded-xl border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
+        <h3 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.admin.appointmentsPerDoctor}</h3>
+        <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.admin.appointmentsPerDoctorPeriod}</p>
+        <p className="mt-8 text-center text-sm text-[#6B7280] dark:text-[#9CA3AF]">No appointment data available.</p>
+      </div>
+    )
+  }
+
   return (
     <div className="rounded-xl border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
       <div>
         <h3 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.admin.appointmentsPerDoctor}</h3>
-        <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF] dark:text-[#9CA3AF]">{t.admin.appointmentsPerDoctorPeriod}</p>
+        <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.admin.appointmentsPerDoctorPeriod}</p>
       </div>
 
       <div className="mt-4 flex flex-col gap-4">
-        {doctorData.map((d) => (
+        {doctorEntries.map((d) => (
           <div key={d.name} className="flex items-center gap-3">
             {/* Left axis: avatar + name */}
             <div className="flex w-44 shrink-0 items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F9FAFB] dark:bg-[#374151] dark:bg-[#374151] text-[11px] font-semibold text-[#6B7280] ring-1 ring-[#E5E7EB] dark:bg-[#374151] dark:text-[#9CA3AF] dark:ring-[#374151]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F9FAFB] text-[11px] font-semibold text-[#6B7280] ring-1 ring-[#E5E7EB] dark:bg-[#374151] dark:text-[#9CA3AF] dark:ring-[#374151]">
                 {d.initials}
               </span>
               <span className="truncate text-sm text-[#111827] dark:text-[#F9FAFB]">{d.name}</span>
             </div>
             {/* Bar track */}
             <div className="flex flex-1 items-center gap-3">
-              <div className="h-6 flex-1 overflow-hidden rounded-md bg-[#F9FAFB] dark:bg-[#374151] dark:bg-[#374151]">
+              <div className="h-6 flex-1 overflow-hidden rounded-md bg-[#F9FAFB] dark:bg-[#374151]">
                 <div
                   className="h-full rounded-md bg-[#0F766E]"
-                  style={{ width: `${(d.count / maxCount) * 100}%` }}
+                  style={{ width: `${maxCount > 0 ? (d.count / maxCount) * 100 : 0}%` }}
                 />
               </div>
-              <span className="w-8 shrink-0 text-right text-sm font-medium text-[#111827]">{d.count}</span>
+              <span className="w-8 shrink-0 text-right text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+                {d.count}
+              </span>
             </div>
           </div>
         ))}

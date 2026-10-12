@@ -1,15 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { X, CalendarPlus, Search } from "lucide-react"
-import { users, searchPatients } from "@/lib/mock-data"
 import { deriveAge } from "@/lib/types"
 import type { Patient, User } from "@/lib/types"
 import { useT } from "@/lib/i18n/use-t"
+import { searchPatients } from "@/lib/actions/receptionist/search-patients"
+import { bookAppointment } from "@/lib/actions/receptionist/book-appointment"
 
 type Props = {
   open: boolean
   onClose: () => void
+  onBooked: () => void
+  doctors: User[]
 }
 
 type FormData = {
@@ -34,15 +37,16 @@ const labelClass = "mb-1 block text-xs font-medium text-[#111827] dark:text-[#F9
 const inputClass =
   "h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF]"
 
-const doctors = users.filter((u) => u.role === "doctor" && u.is_active)
-
-export function AppointmentModal({ open, onClose }: Props) {
+export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
   const { t } = useT()
   const [form, setForm] = useState<FormData>(initialForm)
   const [patientQuery, setPatientQuery] = useState("")
   const [patientResults, setPatientResults] = useState<Patient[]>([])
   const [showPatientDropdown, setShowPatientDropdown] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  const activeDoctors = doctors.filter((d) => d.role === "doctor" && d.is_active)
 
   if (!open) return null
 
@@ -52,11 +56,14 @@ export function AppointmentModal({ open, onClose }: Props) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
-  function searchPatient(q: string) {
+  async function searchPatient(q: string) {
     setPatientQuery(q)
     if (q.length >= 2) {
-      setPatientResults(searchPatients(q))
-      setShowPatientDropdown(true)
+      const res = await searchPatients(q)
+      if (res.success) {
+        setPatientResults(res.data)
+        setShowPatientDropdown(true)
+      }
     } else {
       setPatientResults([])
       setShowPatientDropdown(false)
@@ -75,8 +82,18 @@ export function AppointmentModal({ open, onClose }: Props) {
   }
 
   function handleSubmit() {
-    console.log("Book appointment:", form)
-    setSubmitted(true)
+    startTransition(async () => {
+      const result = await bookAppointment({
+        patient_id: form.patient_id,
+        doctor_id: form.doctor_id,
+        type: form.type,
+        scheduled_start: `${form.scheduled_date}T${form.scheduled_time}:00Z`,
+      })
+      if (result.success) {
+        setSubmitted(true)
+        onBooked()
+      }
+    })
   }
 
   function handleClose() {
@@ -121,7 +138,7 @@ export function AppointmentModal({ open, onClose }: Props) {
                 .replace("{name}", form.patient_name)
                 .replace("{date}", form.scheduled_date)
                 .replace("{time}", form.scheduled_time || "TBD")
-                .replace("{doctor}", doctors.find((d) => d.id === form.doctor_id)?.full_name ?? "TBD")}
+                .replace("{doctor}", activeDoctors.find((d) => d.id === form.doctor_id)?.full_name ?? "TBD")}
             </p>
             <button
               type="button"
@@ -198,7 +215,7 @@ export function AppointmentModal({ open, onClose }: Props) {
                   onChange={(e) => update("doctor_id", e.target.value)}
                 >
                   <option value="">{t.common.selectDoctor}</option>
-                  {doctors.map((d) => (
+                  {activeDoctors.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.full_name}
                     </option>
@@ -271,10 +288,10 @@ export function AppointmentModal({ open, onClose }: Props) {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={!form.patient_id || !form.doctor_id || !form.scheduled_time}
+                disabled={!form.patient_id || !form.doctor_id || !form.scheduled_time || isPending}
                 className="rounded-[8px] bg-[#0F766E] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {t.receptionist.newAppointment}
+                {isPending ? "…" : t.receptionist.newAppointment}
               </button>
             </div>
           </>

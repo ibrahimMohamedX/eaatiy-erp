@@ -1,16 +1,22 @@
 "use client"
 
 import { Calendar, Stethoscope, FileText } from "lucide-react"
-import { getPatientHistory, getPatient, getUser, getMedicalRecordForAppointment } from "@/lib/mock-data"
 import { deriveAge } from "@/lib/types"
-import type { Patient } from "@/lib/types"
+import type { Appointment, Patient, User } from "@/lib/types"
+import { getDoctorInitials } from "@/lib/db/repositories/users"
 import { useT } from "@/lib/i18n/use-t"
 
-type Props = { patient: Patient }
+type Props = {
+  patient: Patient
+  /** Past completed appointments (from getPatientData action) */
+  history: Appointment[]
+  /** Doctors lookup (from getMyQueue action or separate fetch) */
+  doctors: User[]
+}
 
-export function HistoryTab({ patient }: Props) {
+export function HistoryTab({ patient, history, doctors }: Props) {
   const { t } = useT()
-  const history = getPatientHistory(patient.id)
+  const doctorMap = new Map(doctors.map((d) => [d.id, d]))
 
   if (history.length === 0) {
     return (
@@ -27,8 +33,7 @@ export function HistoryTab({ patient }: Props) {
       <h3 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.doctor.pastEncounters}</h3>
 
       {history.map((apt) => {
-        const doctor = getUser(apt.doctor_id)
-        const record = getMedicalRecordForAppointment(apt.id)
+        const doctor = doctorMap.get(apt.doctor_id)
         const ageAtVisit = deriveAge(patient.date_of_birth, new Date(apt.completed_at!))
 
         return (
@@ -57,12 +62,7 @@ export function HistoryTab({ patient }: Props) {
               {doctor && (
                 <div className="flex items-center gap-2">
                   <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#E5E7EB] text-[10px] font-semibold text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
-                    {doctor.full_name
-                      .replace(/^Dr\.\s*/i, "")
-                      .split(" ")
-                      .map((p) => p[0])
-                      .join("")
-                      .toUpperCase()}
+                    {getDoctorInitials(doctor)}
                   </span>
                   <div className="text-right">
                     <p className="text-sm text-[#111827] dark:text-[#F9FAFB]">{doctor.full_name}</p>
@@ -74,38 +74,9 @@ export function HistoryTab({ patient }: Props) {
               )}
             </div>
 
-            {/* Clinical summary */}
-            {record && (
-              <div className="mt-3 space-y-2 border-t border-[#E5E7EB] pt-3 dark:border-[#374151]">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#6B7280] dark:text-[#9CA3AF]">
-                    {t.doctor.diagnosis}
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-[#111827] line-clamp-2 dark:text-[#F9FAFB]">{record.diagnosis}</p>
-                </div>
-
-                {/* Vitals snapshot */}
-                {record.vitals && (
-                  <div className="flex flex-wrap gap-3">
-                    {record.vitals.systolic_bp != null && record.vitals.diastolic_bp != null && (
-                      <span className="rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1 text-xs text-[#6B7280] dark:border-[#374151] dark:bg-[#374151] dark:text-[#9CA3AF]">
-                        {t.vitals.systolicBP}: {record.vitals.systolic_bp}/{record.vitals.diastolic_bp}
-                      </span>
-                    )}
-                    {record.vitals.temperature != null && (
-                      <span className="rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1 text-xs text-[#6B7280] dark:border-[#374151] dark:bg-[#374151] dark:text-[#9CA3AF]">
-                        {t.vitals.temperature}: {record.vitals.temperature}°C
-                      </span>
-                    )}
-                    {record.vitals.weight != null && (
-                      <span className="rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1 text-xs text-[#6B7280] dark:border-[#374151] dark:bg-[#374151] dark:text-[#9CA3AF]">
-                        {t.vitals.weight}: {record.vitals.weight}kg
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Note: Clinical summary (diagnosis, vitals) from medical record not shown
+                in v1 wiring. Future enhancement: fetch medical records for historical
+                appointments via getPatientMedicalRecords and join by appointment_id. */}
           </div>
         )
       })}

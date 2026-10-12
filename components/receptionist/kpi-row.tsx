@@ -2,7 +2,6 @@
 
 import { Hourglass, Stethoscope, CheckCircle2, XCircle, Receipt } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
-import { getReceptionistKpis } from "@/lib/mock-data"
 import { useT } from "@/lib/i18n/use-t"
 
 type Kpi = {
@@ -25,21 +24,34 @@ function buildKpis(t: Record<string, any>): Kpi[] {
   ]
 }
 
+export interface KpiCounts {
+  waiting: number
+  inConsultation: number
+  completedToday: number
+  cancelledToday: number
+  unpaidBills: number
+}
+
+type Props = {
+  counts: KpiCounts | null
+}
+
 /**
  * KPI Row — 5-column metric card strip.
- * Values are derived live from the centralized mock data store.
+ * Receives counts from the database via props.
  */
-export function KpiRow() {
+export function KpiRow({ counts }: Props) {
   const { t } = useT()
   const KPIS = buildKpis(t)
-  const kpiData = getReceptionistKpis()
-  const liveValues = [
-    String(kpiData.waiting),
-    String(kpiData.inConsultation),
-    String(kpiData.completedToday),
-    String(kpiData.cancelledToday),
-    String(kpiData.unpaidBills),
-  ]
+  const liveValues = counts
+    ? [
+        String(counts.waiting),
+        String(counts.inConsultation),
+        String(counts.completedToday),
+        String(counts.cancelledToday),
+        String(counts.unpaidBills),
+      ]
+    : ["—", "—", "—", "—", "—"]
 
   return (
     <section className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">

@@ -10,22 +10,25 @@ import { PatientSearchCard } from "@/components/receptionist/patient-search-card
 import { VitalsIntakeCard } from "@/components/receptionist/vitals-intake-card"
 import { PatientRegistrationModal } from "@/components/receptionist/patient-registration-modal"
 import { AppointmentModal } from "@/components/receptionist/appointment-modal"
-import { getTodayAppointments } from "@/lib/mock-data"
-import { FileText, ClipboardList, CreditCard, Settings, ShieldCheck } from "lucide-react"
+import { CallAlertModal } from "@/components/receptionist/call-alert-modal"
 import { useT } from "@/lib/i18n/use-t"
+import { useReceptionPolling } from "@/lib/hooks/use-reception-polling"
+import type { TodayQueueData } from "@/lib/actions/receptionist/get-today-queue"
 
-export function ReceptionistPageShell() {
+type Props = {
+  initialData: TodayQueueData | null
+}
+
+export function ReceptionistPageShell({ initialData }: Props) {
   const { t } = useT()
   const [showRegistration, setShowRegistration] = useState(false)
   const [showAppointment, setShowAppointment] = useState(false)
   const [activeView, setActiveView] = useState<ReceptionistView>("sidebar.receptionist.dashboard")
 
-  const todayApps = getTodayAppointments()
-  const waitingCount = todayApps.filter((a) => a.status === "waiting").length
-  const inConsultCount = todayApps.filter(
-    (a) => a.status === "in_consultation",
-  ).length
-  const unpaidCount = 3 // from mock billings
+  // Polling hook — uses SSR initial data for instant render, then polls every 15s
+  const { data, alertQueue, dismissAlerts, refresh } = useReceptionPolling(initialData)
+
+  const counts = data?.counts
 
   function renderContent() {
     switch (activeView) {
@@ -38,12 +41,17 @@ export function ReceptionistPageShell() {
                 {t.receptionist.greeting}
               </p>
               <p className="mt-1 text-sm text-[#6B7280] dark:text-[#9CA3AF]">
-                {t.receptionist.liveQueue}: {waitingCount} {t.receptionist.waiting}, {inConsultCount} {t.receptionist.inConsultation}. {unpaidCount} {t.receptionist.unpaidBills}.
+                {t.receptionist.liveQueue}: {counts?.waiting ?? 0} {t.receptionist.waiting}, {counts?.inConsultation ?? 0} {t.receptionist.inConsultation}. {counts?.unpaidBills ?? 0} {t.receptionist.unpaidBills}.
               </p>
             </section>
-            <KpiRow />
+            <KpiRow counts={counts ?? null} />
             <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[65%_35%]">
-              <LiveQueuePanel />
+              <LiveQueuePanel
+                appointments={data?.appointments ?? []}
+                patients={data?.patients ?? []}
+                doctors={data?.doctors ?? []}
+                                onMutated={refresh}
+              />
               <div className="flex min-w-0 flex-col gap-6">
                 <PatientSearchCard />
                 <VitalsIntakeCard />
@@ -51,53 +59,10 @@ export function ReceptionistPageShell() {
             </section>
           </>
         )
-      case "sidebar.receptionist.liveActivity":
-        return (
-          <section className="flex flex-col gap-6">
-            <LiveQueuePanel />
-            <KpiRow />
-          </section>
-        )
       case "sidebar.receptionist.patients":
         return (
           <section className="flex flex-col gap-6">
             <PatientSearchCard />
-          </section>
-        )
-      case "sidebar.receptionist.appointments":
-        return (
-          <section className="flex flex-col gap-6">
-            <LiveQueuePanel />
-          </section>
-        )
-      case "sidebar.receptionist.triageVitals":
-        return (
-          <section className="flex flex-col gap-6">
-            <VitalsIntakeCard />
-          </section>
-        )
-      case "sidebar.receptionist.billing":
-        return (
-          <section className="flex flex-col items-center justify-center py-20 text-center">
-            <CreditCard className="h-12 w-12 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-            <p className="mt-4 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">{t.sidebar.receptionist.billing}</p>
-            <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.common.loading}</p>
-          </section>
-        )
-      case "sidebar.receptionist.preferences":
-        return (
-          <section className="flex flex-col items-center justify-center py-20 text-center">
-            <Settings className="h-12 w-12 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-            <p className="mt-4 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">{t.sidebar.receptionist.preferences}</p>
-            <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.common.loading}</p>
-          </section>
-        )
-      case "sidebar.receptionist.accessSecurity":
-        return (
-          <section className="flex flex-col items-center justify-center py-20 text-center">
-            <ShieldCheck className="h-12 w-12 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-            <p className="mt-4 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">{t.sidebar.receptionist.accessSecurity}</p>
-            <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.common.loading}</p>
           </section>
         )
       default:
@@ -111,9 +76,11 @@ export function ReceptionistPageShell() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
-            onNewAppointment={() => setShowAppointment(true)}
-            onRegisterPatient={() => setShowRegistration(true)}
-          />
+          onNewAppointment={() => setShowAppointment(true)}
+          onRegisterPatient={() => setShowRegistration(true)}
+          recentCalls={alertQueue}
+          notificationCount={alertQueue.length}
+        />
 
         <main className="flex-1 overflow-y-auto p-6">
           {renderContent()}
@@ -124,10 +91,19 @@ export function ReceptionistPageShell() {
       <PatientRegistrationModal
         open={showRegistration}
         onClose={() => setShowRegistration(false)}
+                onRegistered={refresh}
       />
       <AppointmentModal
         open={showAppointment}
         onClose={() => setShowAppointment(false)}
+                onBooked={refresh}
+        doctors={data?.doctors ?? []}
+      />
+
+      {/* Call-alert notification modal */}
+      <CallAlertModal
+        calledPatients={alertQueue}
+        onDismiss={dismissAlerts}
       />
     </div>
   )

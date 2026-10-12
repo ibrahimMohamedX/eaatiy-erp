@@ -1,17 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { RefreshCw, ChevronDown, ArrowRightCircle, Stethoscope, Trash2 } from "lucide-react"
-import {
-  getTodayAppointments,
-  getPatient,
-  getUser,
-  getDoctorInitials,
-} from "@/lib/mock-data"
+import { useState, useTransition } from "react"
+import { RefreshCw, ChevronDown, Trash2 } from "lucide-react"
 import { deriveAge, APPOINTMENT_STATUS_META } from "@/lib/types"
-import type { Appointment, AppointmentStatus } from "@/lib/types"
+import type { Appointment, AppointmentStatus, Patient, User } from "@/lib/types"
 import { statusBg } from "@/lib/color-utils"
 import { useT, resolveLabel } from "@/lib/i18n/use-t"
+import { cancelAppointment } from "@/lib/actions/receptionist/cancel-appointment"
+import { getDoctorInitials } from "@/lib/db/repositories/users"
+import { formatTime } from "@/lib/format-time"
 
 type StatusFilter = "All" | "Waiting" | "In Consultation" | "Completed" | "Cancelled"
 
@@ -40,6 +37,8 @@ function statusToFilter(s: AppointmentStatus): StatusFilter {
   switch (s) {
     case "waiting":
       return "Waiting"
+    case "called":
+      return "Waiting" // "Called" patients still appear under Waiting filter for reception visibility
     case "in_consultation":
       return "In Consultation"
     case "completed":
@@ -66,15 +65,20 @@ function StatusPill({ status, t }: { status: AppointmentStatus; t: Record<string
   )
 }
 
+type Props = {
+  appointments: Appointment[]
+  patients: Patient[]
+  doctors: User[]
+  onMutated: () => void
+}
+
 /**
  * Live Queue Panel — data table managing today's patient triage.
- * Pulls from centralized mock data and supports status transitions.
+ * Receives data via props and calls server actions for mutations.
  */
-export function LiveQueuePanel() {
+export function LiveQueuePanel({ appointments, patients, doctors, onMutated }: Props) {
   const { t } = useT()
-  const [appointments, setAppointments] = useState<Appointment[]>(() =>
-    getTodayAppointments(),
-  )
+  const [isPending, startTransition] = useTransition()
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All")
   const [typeFilter, setTypeFilter] = useState<"New" | "Follow-up" | "All">("All")
 
@@ -87,33 +91,22 @@ export function LiveQueuePanel() {
     return true
   })
 
-  /** Transition appointment status */
-  function transition(appointment: Appointment, to: AppointmentStatus) {
-    setAppointments((prev) =>
-      prev.map((a) =>
-        a.id === appointment.id
-          ? {
-              ...a,
-              status: to,
-              actual_start:
-                to === "in_consultation" ? new Date().toISOString() : a.actual_start,
-              completed_at:
-                to === "completed" ? new Date().toISOString() : a.completed_at,
-              cancelled_at:
-                to === "cancelled" ? new Date().toISOString() : a.cancelled_at,
-              updated_at: new Date().toISOString(),
-            }
-          : a,
-      ),
-    )
+  function handleCancel(appointmentId: string) {
+    startTransition(async () => {
+      const result = await cancelAppointment(appointmentId)
+      if (result.success) onMutated()
+    })
   }
 
-  /** Refresh — re-pull from mock data */
+  /** Refresh via parent callback */
   function refresh() {
-    setAppointments(getTodayAppointments())
+    onMutated()
     setStatusFilter("All")
     setTypeFilter("All")
   }
+
+  const patientMap = new Map(patients.map((p) => [p.id, p]))
+  const doctorMap = new Map(doctors.map((d) => [d.id, d]))
 
   return (
     <div className="flex flex-col rounded-[12px] border border-[#E5E7EB] bg-white dark:border-[#374151] dark:bg-[#1F2937]">
@@ -206,10 +199,10 @@ export function LiveQueuePanel() {
           </thead>
           <tbody>
             {filtered.map((apt) => {
-              const patient = getPatient(apt.patient_id)
-              const doctor = getUser(apt.doctor_id)
+              const patient = patientMap.get(apt.patient_id)
+              const doctor = doctorMap.get(apt.doctor_id)
               const active = apt.status === "in_consultation"
-              const showActions = apt.status === "waiting" || apt.status === "in_consultation"
+              const showDeleteOnly = apt.status === "waiting"
 
               if (!patient) return null
 
@@ -253,7 +246,7 @@ export function LiveQueuePanel() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-[#111827] dark:text-[#F9FAFB]">
-                    {apt.scheduled_start.slice(11, 16)}
+                    {formatTime(apt.scheduled_start)}
                   </td>
                   <td className="px-4 py-3">
                     <span className="inline-flex items-center rounded-full border border-[#E5E7EB] px-2.5 py-1 text-xs font-medium text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
@@ -264,33 +257,12 @@ export function LiveQueuePanel() {
                     <StatusPill status={apt.status} t={t} />
                   </td>
                   <td className="px-4 py-3">
-                    {showActions && (
+                    {showDeleteOnly && (
                       <div className="flex items-center gap-1">
-                        {apt.status === "waiting" && (
-                          <button
-                            type="button"
-                            onClick={() => transition(apt, "in_consultation")}
-                            className="flex h-7 w-7 items-center justify-center rounded-[6px] text-[#6B7280] transition-colors hover:text-[#0F766E] dark:text-[#9CA3AF] dark:hover:text-[#0F766E]"
-                            aria-label={t.receptionist.startConsultation}
-                            title={t.receptionist.callNext}
-                          >
-                            <Stethoscope className="h-[18px] w-[18px]" strokeWidth={1.5} />
-                          </button>
-                        )}
-                        {apt.status === "in_consultation" && (
-                          <button
-                            type="button"
-                            onClick={() => transition(apt, "completed")}
-                            className="flex h-7 w-7 items-center justify-center rounded-[6px] text-[#6B7280] transition-colors hover:text-[#059669] dark:text-[#9CA3AF] dark:hover:text-[#059669]"
-                            aria-label={t.receptionist.completeConsultation}
-                            title={t.receptionist.markCompleted}
-                          >
-                            <ArrowRightCircle className="h-[18px] w-[18px]" strokeWidth={1.5} />
-                          </button>
-                        )}
                         <button
                           type="button"
-                          onClick={() => transition(apt, "cancelled")}
+                          onClick={() => handleCancel(apt.id)}
+                          disabled={isPending}
                           className="flex h-7 w-7 items-center justify-center rounded-[6px] text-[#6B7280] transition-colors hover:text-[#DC2626] dark:text-[#9CA3AF] dark:hover:text-[#DC2626]"
                           aria-label={t.receptionist.cancelAppointment}
                           title={t.receptionist.cancelAppointment}

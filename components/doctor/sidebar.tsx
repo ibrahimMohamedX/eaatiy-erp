@@ -1,8 +1,9 @@
 "use client"
 
-import { Stethoscope, LayoutDashboard, ListChecks, Users, CalendarDays } from "lucide-react"
+import { Stethoscope, LayoutDashboard, ListChecks, Users, CalendarDays, LogOut } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { useT } from "@/lib/i18n/use-t"
+import { useAuth } from "@/lib/auth/auth-context"
 
 type NavItem = { icon: LucideIcon; label: string; labelKey: string }
 type NavGroup = { label: string; labelKey: string; items: NavItem[] }
@@ -43,6 +44,7 @@ type Props = {
 
 export function DoctorSidebar({ activeView, onNavigate }: Props) {
   const { t } = useT()
+  const auth = useAuth()
   const NAV_GROUPS = buildNavGroups(t)
   const activeKey = activeView
 
@@ -97,12 +99,30 @@ export function DoctorSidebar({ activeView, onNavigate }: Props) {
       <div className="border-t border-[#E5E7EB] p-3 dark:border-[#374151]">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F9FAFB] text-sm font-semibold text-[#111827] dark:bg-[#374151] dark:text-[#F9FAFB]">
-            SR
+            {auth.session?.fullName
+              ? auth.session.fullName
+                  .replace(/^Dr\.\s*/i, "")
+                  .split(" ")
+                  .map((p) => p[0])
+                  .join("")
+                  .toUpperCase()
+              : "SR"}
           </div>
           <div className="flex min-w-0 flex-col leading-tight">
-            <span className="truncate text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">Dr. Sara Reyes</span>
+            <span className="truncate text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+              {auth.session?.fullName ?? "Dr. Sara Reyes"}
+            </span>
             <span className="truncate text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{t.sidebar.doctor.doctor}</span>
           </div>
+          <button
+            type="button"
+            onClick={() => auth.logout()}
+            className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-[#FEF2F2] hover:text-[#DC2626] dark:text-[#9CA3AF] dark:hover:bg-[#450A0A] dark:hover:text-[#FCA5A5]"
+            aria-label={t.common.logOut}
+            title={t.common.logOut}
+          >
+            <LogOut className="h-[18px] w-[18px]" strokeWidth={1.5} />
+          </button>
         </div>
       </div>
     </aside>

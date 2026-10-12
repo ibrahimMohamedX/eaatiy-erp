@@ -1,19 +1,26 @@
+"use client"
+
 import { KpiGrid } from "./kpi-grid"
 import { RevenueChart, StatusDonut } from "./analytics-charts"
+import type { DashboardData } from "@/lib/actions/admin/get-dashboard-data"
 
-export function OverviewTab() {
+type Props = {
+  data: DashboardData | null
+}
+
+export function OverviewTab({ data }: Props) {
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* KPI metric cards */}
-      <KpiGrid />
+      <KpiGrid data={data} />
 
       {/* Charts row */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
         <div className="aspect-[16/9] min-h-[360px]">
-          <RevenueChart />
+          <RevenueChart data={data} />
         </div>
         <div className="min-h-[360px]">
-          <StatusDonut />
+          <StatusDonut data={data} />
         </div>
       </div>
     </div>

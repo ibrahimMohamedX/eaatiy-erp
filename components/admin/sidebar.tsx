@@ -1,8 +1,9 @@
 "use client"
 
-import { Activity, BarChart3, ScrollText, Users, CreditCard, Settings } from "lucide-react"
+import { Activity, BarChart3, ScrollText, Users, CreditCard, Settings, LogOut } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { useT } from "@/lib/i18n/use-t"
+import { useAuth } from "@/lib/auth/auth-context"
 
 export type AdminNavKey = "overview" | "revenue" | "appointments" | "doctors" | "audit"
 
@@ -15,6 +16,7 @@ type Props = {
 
 export function AdminSidebar({ activeKey, onNavigate }: Props) {
   const { t } = useT()
+  const auth = useAuth()
 
   const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     {
@@ -80,12 +82,30 @@ export function AdminSidebar({ activeKey, onNavigate }: Props) {
       <div className="border-t border-[#E5E7EB] p-3 dark:border-[#374151]">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F9FAFB] text-sm font-semibold text-[#111827] dark:bg-[#374151] dark:text-[#F9FAFB]">
-            AM
+            {auth.session?.fullName
+              ? auth.session.fullName
+                  .replace(/^Dr\.\s*/i, "")
+                  .split(" ")
+                  .map((p) => p[0])
+                  .join("")
+                  .toUpperCase()
+              : "AM"}
           </div>
           <div className="flex min-w-0 flex-col leading-tight">
-            <span className="truncate text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">Amelia Monroe</span>
+            <span className="truncate text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+              {auth.session?.fullName ?? "Amelia Monroe"}
+            </span>
             <span className="truncate text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{t.admin.administrator}</span>
           </div>
+          <button
+            type="button"
+            onClick={() => auth.logout()}
+            className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-[#FEF2F2] hover:text-[#DC2626] dark:text-[#9CA3AF] dark:hover:bg-[#450A0A] dark:hover:text-[#FCA5A5]"
+            aria-label={t.common.logOut}
+            title={t.common.logOut}
+          >
+            <LogOut className="h-[18px] w-[18px]" strokeWidth={1.5} />
+          </button>
         </div>
       </div>
     </aside>

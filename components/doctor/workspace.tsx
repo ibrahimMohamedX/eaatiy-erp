@@ -1,31 +1,32 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { CurrentVisitTab } from "./current-visit-tab"
 import { HistoryTab } from "./history-tab"
 import { PrescriptionsTab } from "./prescriptions-tab"
 import { BillingTab } from "./billing-tab"
 import { PatientBanner } from "./patient-banner"
 import { VitalsStrip } from "./vitals-strip"
-import {
-  getPatient,
-  getTodayAppointments,
-  getMedicalRecordForAppointment,
-} from "@/lib/mock-data"
-import type { Appointment, Patient, MedicalRecord } from "@/lib/types"
+import { saveDraft } from "@/lib/actions/doctor/save-draft"
+import { completeConsultation } from "@/lib/actions/doctor/complete-consultation"
+import type { Appointment, Patient, MedicalRecord, Billing, Prescription, User } from "@/lib/types"
+import type { PatientData } from "@/lib/actions/doctor/get-patient-data"
 import { useT } from "@/lib/i18n/use-t"
 
 type TabKey = "current" | "history" | "prescriptions" | "billing"
 
-const DOCTOR_ID = "u_doctor_01"
+type Props = {
+  /** Full patient data from getPatientData server action, or null if no patient selected */
+  patientData: PatientData | null
+  /** Doctors list for resolving doctor names in history tab */
+  doctors: User[]
+  onMutated: () => void
+}
 
-/**
- * Doctor Workspace — right split-screen with patient banner, vitals strip,
- * and tabbed clinical interface. The selected patient drives all tab content.
- */
-export function Workspace() {
+export function Workspace({ patientData, doctors, onMutated }: Props) {
   const { t } = useT()
   const [activeTab, setActiveTab] = useState<TabKey>("current")
+  const [isPending, startTransition] = useTransition()
 
   const TABS: { key: TabKey; label: string }[] = [
     { key: "current", label: t.doctor.tabs[0] },
@@ -34,22 +35,7 @@ export function Workspace() {
     { key: "billing", label: t.doctor.tabs[3] },
   ]
 
-  // Pick the first in-consultation or waiting patient for Dr. Reyes
-  const appointments = getTodayAppointments(DOCTOR_ID)
-  const activeAppointment = appointments.find(
-    (a) => a.status === "in_consultation" || a.status === "waiting",
-  )
-
-  const patient: Patient | undefined = activeAppointment
-    ? getPatient(activeAppointment.patient_id)
-    : undefined
-
-  const medicalRecord: MedicalRecord | undefined =
-    activeAppointment && activeAppointment.status === "completed"
-      ? getMedicalRecordForAppointment(activeAppointment.id)
-      : undefined
-
-  if (!patient || !activeAppointment) {
+  if (!patientData) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-[#F9FAFB] dark:bg-[#111827]">
         <div className="text-center">
@@ -64,10 +50,42 @@ export function Workspace() {
     )
   }
 
+  const { patient, appointment, medicalRecord, billing, prescription, history } = patientData
+
+  function handleSaveDraft(chiefComplaint: string, diagnosis: string, notes?: string) {
+    startTransition(async () => {
+      const result = await saveDraft({
+        appointment_id: appointment.id,
+        patient_id: patient.id,
+        chief_complaint: chiefComplaint,
+        diagnosis,
+        notes,
+      })
+      if (result.success) {
+        onMutated()
+      }
+    })
+  }
+
+  function handleCompleteConsultation(chiefComplaint: string, diagnosis: string, notes?: string) {
+    startTransition(async () => {
+      const result = await completeConsultation({
+        appointment_id: appointment.id,
+        patient_id: patient.id,
+        chief_complaint: chiefComplaint,
+        diagnosis,
+        notes,
+      })
+      if (result.success) {
+        onMutated()
+      }
+    })
+  }
+
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto">
       {/* Sticky patient banner */}
-      <PatientBanner patient={patient} appointment={activeAppointment} />
+      <PatientBanner patient={patient} appointment={appointment} />
 
       {/* Vitals summary strip */}
       <VitalsStrip vitals={medicalRecord?.vitals} />
@@ -106,13 +124,34 @@ export function Workspace() {
             {activeTab === "current" && (
               <CurrentVisitTab
                 patient={patient}
-                appointment={activeAppointment}
-                existingRecord={medicalRecord}
+                appointment={appointment}
+                existingRecord={medicalRecord ?? undefined}
+                onSaveDraft={handleSaveDraft}
+                onCompleteConsultation={handleCompleteConsultation}
+                isPending={isPending}
               />
             )}
-            {activeTab === "history" && <HistoryTab patient={patient} />}
-            {activeTab === "prescriptions" && <PrescriptionsTab />}
-            {activeTab === "billing" && <BillingTab appointment={activeAppointment} />}
+            {activeTab === "history" && (
+              <HistoryTab
+                patient={patient}
+                history={history}
+                doctors={doctors}
+              />
+            )}
+            {activeTab === "prescriptions" && (
+              <PrescriptionsTab
+                patient={patient}
+                medicalRecord={medicalRecord ?? undefined}
+                onMutated={onMutated}
+              />
+            )}
+            {activeTab === "billing" && (
+              <BillingTab
+                billing={billing ?? undefined}
+                appointment={appointment}
+                onMutated={onMutated}
+              />
+            )}
           </div>
         </div>
       </div>

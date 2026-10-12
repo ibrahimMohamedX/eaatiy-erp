@@ -2,10 +2,25 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Bell, CalendarPlus, Search, UserPlus, X } from "lucide-react"
-import { searchPatients } from "@/lib/mock-data"
 import { deriveAge } from "@/lib/types"
-import type { Patient } from "@/lib/types"
+import type { Patient, Appointment } from "@/lib/types"
+import { formatTime } from "@/lib/format-time"
 import { useT } from "@/lib/i18n/use-t"
+import { searchPatients } from "@/lib/actions/receptionist/search-patients"
+
+export interface RecentCall {
+  appointment: Appointment
+  patient: Patient | undefined
+}
+
+type Props = {
+  onNewAppointment?: () => void
+  onRegisterPatient?: () => void
+  /** Recent called patients to show in notification dropdown */
+  recentCalls?: RecentCall[]
+  /** Number of new notifications since last dismissal */
+  notificationCount?: number
+}
 
 /**
  * Top bar with global fuzzy patient search, notification bell,
@@ -14,17 +29,39 @@ import { useT } from "@/lib/i18n/use-t"
 export function TopBar({
   onNewAppointment,
   onRegisterPatient,
-}: {
-  onNewAppointment?: () => void
-  onRegisterPatient?: () => void
-}) {
+  recentCalls,
+  notificationCount,
+}: Props) {
   const { t } = useT()
   const [query, setQuery] = useState("")
   const [focused, setFocused] = useState(false)
+  const [results, setResults] = useState<Patient[]>([])
+  const [showNotifications, setShowNotifications] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const bellRef = useRef<HTMLDivElement>(null)
 
-  const results = query.length >= 2 ? searchPatients(query) : []
   const showDropdown = focused && query.length >= 2
+
+  useEffect(() => {
+    if (query.length < 2) {
+      setResults([])
+      return
+    }
+    searchPatients(query).then((res) => {
+      if (res.success) setResults(res.data)
+    })
+  }, [query])
+
+  // Close notification bell on click outside
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setShowNotifications(false)
+      }
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [])
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -104,15 +141,58 @@ export function TopBar({
           </span>
         </div>
 
-        {/* Notification bell */}
-        <button
-          type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-[8px] border border-[#E5E7EB] text-[#6B7280] transition-colors hover:text-[#111827] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
-          aria-label={t.common.notifications}
-        >
-          <Bell className="h-[18px] w-[18px]" strokeWidth={1.5} />
-          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#DC2626]" aria-hidden />
-        </button>
+        {/* Notification bell with dropdown */}
+        <div ref={bellRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setShowNotifications((p) => !p)}
+            className="relative flex h-9 w-9 items-center justify-center rounded-[8px] border border-[#E5E7EB] text-[#6B7280] transition-colors hover:text-[#111827] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
+            aria-label={t.common.notifications}
+          >
+            <Bell className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            {(notificationCount ?? 0) > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#DC2626] px-1 text-[10px] font-bold text-white">
+                {notificationCount}
+              </span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 top-full z-30 mt-2 w-72 rounded-[12px] border border-[#E5E7EB] bg-white shadow-lg dark:border-[#374151] dark:bg-[#1F2937]">
+              <div className="border-b border-[#E5E7EB] px-4 py-2.5 dark:border-[#374151]">
+                <p className="text-xs font-semibold text-[#111827] dark:text-[#F9FAFB]">
+                  {t.common.notifications}
+                </p>
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                {!recentCalls || recentCalls.length === 0 ? (
+                  <p className="px-4 py-6 text-center text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                    No recent notifications
+                  </p>
+                ) : (
+                  recentCalls.map(({ appointment, patient }) => (
+                    <div
+                      key={appointment.id}
+                      className="flex items-center gap-3 border-b border-[#E5E7EB] px-4 py-3 text-left last:border-b-0 dark:border-[#374151]"
+                    >
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#0F766E] text-xs font-bold text-[#0F766E]">
+                        {appointment.queue_number}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+                          {patient?.full_name ?? appointment.patient_id}
+                        </p>
+                        <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                          Called · {formatTime(appointment.last_called_at)}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Secondary + primary buttons */}
         <button

@@ -8,6 +8,7 @@ import {
   Globe,
   ChevronRight,
   X,
+  Settings,
 } from "lucide-react"
 import { useT } from "@/lib/i18n/use-t"
 import { useTheme } from "@/lib/use-theme"
@@ -111,12 +112,6 @@ export function FloatingActionButton() {
     dir === "rtl"
       ? "left-6 right-auto"
       : "right-6 left-auto"
-
-  // FAB button icon: gear/cog representation
-  const FabIcon =
-    resolved === "dark"
-      ? Moon
-      : Sun
 
   return (
     <div
@@ -236,7 +231,7 @@ export function FloatingActionButton() {
         {open ? (
           <X className="h-5 w-5" strokeWidth={1.5} />
         ) : (
-          <FabIcon className="h-5 w-5" strokeWidth={1.5} />
+          <Settings className="h-5 w-5" strokeWidth={1.5} />
         )}
       </button>
     </div>

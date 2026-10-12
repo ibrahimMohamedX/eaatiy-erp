@@ -2,18 +2,14 @@
 
 import {
   LayoutDashboard,
-  Activity,
   Users,
-  CalendarClock,
-  ClipboardList,
-  CreditCard,
-  Settings,
-  ShieldCheck,
   Cross,
   ChevronsUpDown,
+  LogOut,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { useT } from "@/lib/i18n/use-t"
+import { useAuth } from "@/lib/auth/auth-context"
 
 type NavItem = { label: string; labelKey: string; icon: LucideIcon }
 type NavGroup = { label: string; labelKey: string; items: NavItem[] }
@@ -26,40 +22,16 @@ function buildNavGroups(t: Record<string, any>) {
       label: s.overview ?? "OVERVIEW",
       items: [
         { labelKey: "sidebar.receptionist.dashboard", label: s.dashboard ?? "Dashboard", icon: LayoutDashboard },
-        { labelKey: "sidebar.receptionist.liveActivity", label: s.liveActivity ?? "Live Activity", icon: Activity },
-      ],
-    },
-    {
-      labelKey: "sidebar.receptionist.operations",
-      label: s.operations ?? "OPERATIONS",
-      items: [
         { labelKey: "sidebar.receptionist.patients", label: s.patients ?? "Patients", icon: Users },
-        { labelKey: "sidebar.receptionist.appointments", label: s.appointments ?? "Appointments", icon: CalendarClock },
-        { labelKey: "sidebar.receptionist.triageVitals", label: s.triageVitals ?? "Triage & Vitals", icon: ClipboardList },
-        { labelKey: "sidebar.receptionist.billing", label: s.billing ?? "Billing", icon: CreditCard },
-      ],
-    },
-    {
-      labelKey: "sidebar.receptionist.settings",
-      label: s.settings ?? "SETTINGS",
-      items: [
-        { labelKey: "sidebar.receptionist.preferences", label: s.preferences ?? "Preferences", icon: Settings },
-        { labelKey: "sidebar.receptionist.accessSecurity", label: s.accessSecurity ?? "Access & Security", icon: ShieldCheck },
       ],
     },
   ]
 }
 
-// View identifiers are stable labelKey strings — locale-independent
+// Working views only — placeholder views removed
 export type ReceptionistView =
   | "sidebar.receptionist.dashboard"
-  | "sidebar.receptionist.liveActivity"
   | "sidebar.receptionist.patients"
-  | "sidebar.receptionist.appointments"
-  | "sidebar.receptionist.triageVitals"
-  | "sidebar.receptionist.billing"
-  | "sidebar.receptionist.preferences"
-  | "sidebar.receptionist.accessSecurity"
 
 type Props = {
   activeView: ReceptionistView
@@ -68,6 +40,7 @@ type Props = {
 
 export function Sidebar({ activeView, onNavigate }: Props) {
   const { t } = useT()
+  const auth = useAuth()
   const NAV_GROUPS = buildNavGroups(t)
   const activeKey = activeView
 
@@ -130,13 +103,29 @@ export function Sidebar({ activeView, onNavigate }: Props) {
       <div className="border-t border-[#E5E7EB] p-4 dark:border-[#374151]">
         <div className="flex items-center gap-3 rounded-[12px] border border-[#E5E7EB] p-3 dark:border-[#374151]">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0F766E]/[0.08] text-xs font-semibold text-[#0F766E]">
-            HM
+            {auth.session?.fullName
+              ? auth.session.fullName
+                  .split(" ")
+                  .map((p) => p[0])
+                  .join("")
+                  .toUpperCase()
+              : "HM"}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">Helena Marsh</p>
+            <p className="truncate text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+              {auth.session?.fullName ?? "Helena Marsh"}
+            </p>
             <p className="truncate text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.sidebar.receptionist.receptionConsole}</p>
           </div>
-          <ChevronsUpDown className="h-4 w-4 shrink-0 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
+          <button
+            type="button"
+            onClick={() => auth.logout()}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-[#FEF2F2] hover:text-[#DC2626] dark:text-[#9CA3AF] dark:hover:bg-[#450A0A] dark:hover:text-[#FCA5A5]"
+            aria-label={t.common.logOut}
+            title={t.common.logOut}
+          >
+            <LogOut className="h-[18px] w-[18px]" strokeWidth={1.5} />
+          </button>
         </div>
       </div>
     </aside>

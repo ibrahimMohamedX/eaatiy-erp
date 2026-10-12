@@ -2,25 +2,26 @@
 
 import { DollarSign, Wallet, CalendarDays, UserPlus, CheckCircle2, XCircle, ArrowUpRight } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
-import { getAdminKpis } from "@/lib/mock-data"
 import { useT } from "@/lib/i18n/use-t"
+import type { DashboardData } from "@/lib/actions/admin/get-dashboard-data"
 
-type Kpi = {
+type KpiDef = {
   label: string
-  value: string
   icon: LucideIcon
   iconColor: string
   iconBg: string
+  getValue: (data: DashboardData) => string
   trend?: { pct: string; direction: "up" | "down"; color: string }
 }
 
-function buildKpiDefs(t: Record<string, any>): Omit<Kpi, "value">[] {
+function buildKpiDefs(t: Record<string, any>): KpiDef[] {
   return [
     {
       label: t.admin.totalRevenue,
       icon: DollarSign,
       iconColor: "#0F766E",
       iconBg: "rgba(15,118,110,0.12)",
+      getValue: (d) => `$${d.revenueSummary.totalPaid.toLocaleString()}`,
       trend: { pct: "+12%", direction: "up", color: "#059669" },
     },
     {
@@ -28,6 +29,7 @@ function buildKpiDefs(t: Record<string, any>): Omit<Kpi, "value">[] {
       icon: Wallet,
       iconColor: "#D97706",
       iconBg: "rgba(217,119,6,0.12)",
+      getValue: (d) => `$${d.revenueSummary.outstandingBalance.toLocaleString()}`,
       trend: { pct: "+4%", direction: "up", color: "#DC2626" },
     },
     {
@@ -35,47 +37,45 @@ function buildKpiDefs(t: Record<string, any>): Omit<Kpi, "value">[] {
       icon: CalendarDays,
       iconColor: "#2563EB",
       iconBg: "rgba(37,99,235,0.12)",
+      getValue: (d) => String(d.appointmentStats.total),
     },
     {
       label: t.admin.newPatients,
       icon: UserPlus,
       iconColor: "#059669",
       iconBg: "rgba(5,150,105,0.12)",
+      getValue: (d) => String(d.newPatients),
     },
     {
       label: t.admin.completionRate,
       icon: CheckCircle2,
       iconColor: "#0F766E",
       iconBg: "rgba(15,118,110,0.12)",
+      getValue: (d) => `${d.appointmentStats.completionRate}%`,
     },
     {
       label: t.admin.cancellationRate,
       icon: XCircle,
       iconColor: "#DC2626",
       iconBg: "rgba(220,38,38,0.12)",
+      getValue: (d) => `${d.appointmentStats.cancellationRate}%`,
     },
   ]
 }
 
-export function KpiGrid() {
+type Props = {
+  data: DashboardData | null
+}
+
+export function KpiGrid({ data }: Props) {
   const { t } = useT()
   const KPI_DEFS = buildKpiDefs(t)
-  const kpiData = getAdminKpis()
-
-  const liveValues: Record<string, string> = {
-    [t.admin.totalRevenue]: `$${kpiData.totalRevenue.toLocaleString()}`,
-    [t.admin.outstandingBalance]: `$${kpiData.outstandingBalance.toLocaleString()}`,
-    [t.admin.totalAppointments]: String(kpiData.totalAppointments),
-    [t.admin.newPatients]: String(kpiData.newPatients),
-    [t.admin.completionRate]: `${kpiData.completionRate}%`,
-    [t.admin.cancellationRate]: `${kpiData.cancellationRate}%`,
-  }
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
       {KPI_DEFS.map((kpi) => {
         const Icon = kpi.icon
-        const value = liveValues[kpi.label] ?? "—"
+        const value = data ? kpi.getValue(data) : "—"
         return (
           <div
             key={kpi.label}

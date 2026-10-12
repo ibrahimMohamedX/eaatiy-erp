@@ -13,6 +13,7 @@ export type UserRole = "admin" | "doctor" | "receptionist"
 
 export type AppointmentStatus =
   | "waiting"
+  | "called"
   | "in_consultation"
   | "completed"
   | "cancelled"
@@ -91,6 +92,7 @@ export interface Appointment {
   type: AppointmentType
   status: AppointmentStatus
   scheduled_start: string // ISO 8601 timestamp
+  last_called_at?: string // ISO 8601 — set when status → called; cleared on in_consultation
   actual_start?: string // ISO 8601 — set when status → in_consultation
   completed_at?: string // ISO 8601 — set when status → completed
   cancelled_at?: string // ISO 8601
@@ -199,6 +201,7 @@ export interface StatusMeta {
 /** Mapping from AppointmentStatus to display metadata */
 export const APPOINTMENT_STATUS_META: Record<AppointmentStatus, StatusMeta> = {
   waiting: { labelKey: "status.waiting", label: "Waiting", color: "#D97706" },
+  called: { labelKey: "status.called", label: "Called", color: "#9333EA" },
   in_consultation: { labelKey: "status.inConsultation", label: "In Consultation", color: "#2563EB" },
   completed: { labelKey: "status.completed", label: "Completed", color: "#059669" },
   cancelled: { labelKey: "status.cancelled", label: "Cancelled", color: "#DC2626" },

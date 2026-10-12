@@ -1,12 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { X, UserPlus } from "lucide-react"
 import { useT } from "@/lib/i18n/use-t"
+import { registerPatient } from "@/lib/actions/receptionist/register-patient"
+import type { CreatePatientInput } from "@/lib/db/repositories/patients"
 
 type Props = {
   open: boolean
   onClose: () => void
+  onRegistered: () => void
 }
 
 type FormData = {
@@ -39,10 +42,11 @@ const labelClass = "mb-1 block text-xs font-medium text-[#111827] dark:text-[#F9
 const inputClass =
   "h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF]"
 
-export function PatientRegistrationModal({ open, onClose }: Props) {
+export function PatientRegistrationModal({ open, onClose, onRegistered }: Props) {
   const { t } = useT()
   const [form, setForm] = useState<FormData>(initialForm)
   const [submitted, setSubmitted] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   if (!open) return null
 
@@ -51,9 +55,25 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
   }
 
   function handleSubmit() {
-    // In production, POST to /api/[tenant]/patients
-    console.log("Register patient:", form)
-    setSubmitted(true)
+    const input: CreatePatientInput = {
+      full_name: form.full_name,
+      date_of_birth: form.date_of_birth,
+      gender: (form.gender as "male" | "female" | "other") || "other",
+      phone: form.phone,
+      email: form.email || undefined,
+      address: form.address || undefined,
+      emergency_contact_name: form.emergency_name || undefined,
+      emergency_contact_phone: form.emergency_phone || undefined,
+      blood_group: form.blood_group || undefined,
+      allergies: form.allergies || undefined,
+    }
+    startTransition(async () => {
+      const result = await registerPatient(input)
+      if (result.success) {
+        setSubmitted(true)
+        onRegistered()
+      }
+    })
   }
 
   function handleClose() {
@@ -256,10 +276,10 @@ export function PatientRegistrationModal({ open, onClose }: Props) {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={!form.full_name || !form.date_of_birth || !form.phone}
+                disabled={!form.full_name || !form.date_of_birth || !form.phone || isPending}
                 className="rounded-[8px] bg-[#0F766E] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {t.receptionist.registerNewPatient}
+                {isPending ? "…" : t.receptionist.registerNewPatient}
               </button>
             </div>
           </>

@@ -1,16 +1,23 @@
 "use client"
 
+import { useState, useTransition } from "react"
 import { DollarSign, CreditCard, Banknote, CheckCircle2, Clock } from "lucide-react"
-import { getBillingForAppointment } from "@/lib/mock-data"
 import { PAYMENT_STATUS_META } from "@/lib/types"
-import type { Appointment } from "@/lib/types"
+import { markBillingPaid } from "@/lib/actions/doctor/mark-billing-paid"
+import type { Appointment, Billing } from "@/lib/types"
 import { useT, resolveLabel } from "@/lib/i18n/use-t"
 
-type Props = { appointment: Appointment }
+type Props = {
+  billing?: Billing
+  appointment: Appointment
+  /** Called after a successful mutation so the workspace can refresh data */
+  onMutated: () => void
+}
 
-export function BillingTab({ appointment }: Props) {
+export function BillingTab({ billing, appointment, onMutated }: Props) {
   const { t } = useT()
-  const billing = getBillingForAppointment(appointment.id)
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
   if (!billing) {
     return (
@@ -24,6 +31,18 @@ export function BillingTab({ appointment }: Props) {
 
   const statusMeta = PAYMENT_STATUS_META[billing.payment_status]
   const isPaid = billing.payment_status === "paid"
+
+  function handleMarkPaid(method: "cash" | "card") {
+    setError(null)
+    startTransition(async () => {
+      const result = await markBillingPaid(billing!.id, method)
+      if (result.success) {
+        onMutated()
+      } else {
+        setError(result.error)
+      }
+    })
+  }
 
   return (
     <div className="p-5">
@@ -80,6 +99,13 @@ export function BillingTab({ appointment }: Props) {
         </span>
       </div>
 
+      {/* Error banner */}
+      {error && (
+        <div className="mt-3 rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 text-xs text-[#DC2626] dark:border-[#7F1D1D] dark:bg-[#450A0A] dark:text-[#FCA5A5]">
+          {error}
+        </div>
+      )}
+
       {/* Detail rows */}
       <div className="mt-5 space-y-3">
         <div className="flex items-center justify-between rounded-[8px] border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 dark:border-[#374151] dark:bg-[#374151]">
@@ -120,14 +146,18 @@ export function BillingTab({ appointment }: Props) {
         <div className="mt-5 flex gap-3">
           <button
             type="button"
-            className="flex flex-1 items-center justify-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
+            disabled={isPending}
+            onClick={() => handleMarkPaid("cash")}
+            className="flex flex-1 items-center justify-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
           >
             <Banknote className="h-4 w-4 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
             {t.doctor.markPaidCash}
           </button>
           <button
             type="button"
-            className="flex flex-1 items-center justify-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
+            disabled={isPending}
+            onClick={() => handleMarkPaid("card")}
+            className="flex flex-1 items-center justify-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
           >
             <CreditCard className="h-4 w-4 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
             {t.doctor.markPaidCard}

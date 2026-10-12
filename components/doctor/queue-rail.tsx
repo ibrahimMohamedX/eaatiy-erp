@@ -1,50 +1,90 @@
 "use client"
 
-import { useState } from "react"
-import { Stethoscope, PhoneCall } from "lucide-react"
-import {
-  getTodayAppointments,
-  getPatient,
-  getUser,
-  getDoctorInitials,
-} from "@/lib/mock-data"
+import { useState, useEffect, useRef } from "react"
+import { Stethoscope, Play, PhoneCall } from "lucide-react"
 import { deriveAge, APPOINTMENT_STATUS_META } from "@/lib/types"
-import type { Appointment } from "@/lib/types"
+import type { Appointment, Patient, User } from "@/lib/types"
+import { getDoctorInitials } from "@/lib/db/repositories/users"
 import { useT, resolveLabel } from "@/lib/i18n/use-t"
+import { statusBg } from "@/lib/color-utils"
+import { formatTime } from "@/lib/format-time"
 
-/**
- * Doctor's "My Queue" left rail — independently scrollable list of today's
- * waiting/in-consultation patients assigned to this doctor.
- */
+const CALL_AGAIN_COOLDOWN_MS = 2 * 60 * 1000 // 2 minutes
 
-// For now, show Dr. Sara Reyes' patients (u_doctor_01).
-const DOCTOR_ID = "u_doctor_01"
+type Props = {
+  appointments: Appointment[]
+  patients: Patient[]
+  doctors: User[]
+  serverNow: string
+  selectedId: string | null
+  onSelect: (appointmentId: string) => void
+  onCallNext: (appointmentId: string) => void
+  onCallAgain: (appointmentId: string) => void
+  onStartConsultation: (appointmentId: string) => void
+}
 
 function QueueCard({
   appointment,
+  patient,
+  doctor,
   isSelected,
+  hasInConsultation,
   onSelect,
+  onCallNext,
+  onCallAgain,
+  onStartConsultation,
+  serverNow,
   t,
 }: {
   appointment: Appointment
+  patient: Patient
+  doctor?: User
   isSelected: boolean
+  hasInConsultation: boolean
   onSelect: () => void
+  onCallNext: () => void
+  onCallAgain: () => void
+  onStartConsultation: () => void
+  serverNow: string
   t: Record<string, any>
 }) {
-  const patient = getPatient(appointment.patient_id)
-  const doctor = getUser(appointment.doctor_id)
   const meta = APPOINTMENT_STATUS_META[appointment.status]
-  if (!patient) return null
-
-  const age = deriveAge(patient.date_of_birth)
+  const age = deriveAge(patient.date_of_birth, new Date(serverNow))
   const isWaiting = appointment.status === "waiting"
+  const isCalled = appointment.status === "called"
   const isActive = appointment.status === "in_consultation"
 
+  // Countdown timer for Call Again cooldown
+  const [callAgainSecondsLeft, setCallAgainSecondsLeft] = useState(0)
+
+  // Calculate and track the cooldown timer
+  useEffect(() => {
+    if (!isCalled || !appointment.last_called_at) {
+      setCallAgainSecondsLeft(0)
+      return
+    }
+
+    function recalc() {
+      const lastCalled = new Date(appointment.last_called_at!).getTime()
+      const elapsed = Date.now() - lastCalled
+      const remaining = CALL_AGAIN_COOLDOWN_MS - elapsed
+      setCallAgainSecondsLeft(remaining > 0 ? Math.ceil(remaining / 1000) : 0)
+    }
+
+    recalc()
+    const interval = setInterval(recalc, 1000)
+    return () => clearInterval(interval)
+  }, [isCalled, appointment.last_called_at])
+
+  const canCallAgain = callAgainSecondsLeft === 0
+
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
-      className={`w-full rounded-[12px] border p-4 text-left transition-colors ${
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect() } }}
+      className={`w-full rounded-[12px] border p-4 text-left transition-colors cursor-pointer ${
         isSelected
           ? "border-[#0F766E] bg-[#F9FAFB] dark:border-[#0F766E] dark:bg-[#374151]"
           : "border-[#E5E7EB] bg-white hover:border-[#0F766E]/40 dark:border-[#374151] dark:bg-[#1F2937] dark:hover:border-[#0F766E]/60"
@@ -53,10 +93,9 @@ function QueueCard({
       {/* Top row: queue# + name + status */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
-          {/* Queue number circle */}
           <span
             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${
-              isActive
+              isActive || isCalled
                 ? "border-[#0F766E] bg-[#0F766E] text-white"
                 : "border-[#E5E7EB] text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]"
             }`}
@@ -72,15 +111,7 @@ function QueueCard({
         <span
           className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
           style={{
-            backgroundColor: `rgba(${
-              meta.color === "#D97706"
-                ? "217,119,6"
-                : meta.color === "#2563EB"
-                  ? "37,99,235"
-                  : meta.color === "#059669"
-                    ? "5,150,105"
-                    : "220,38,38"
-            },0.12)`,
+            backgroundColor: statusBg(meta.color),
             color: meta.color,
           }}
         >
@@ -98,39 +129,81 @@ function QueueCard({
         <span>{appointment.type === "new" ? t.doctor.newPatientLabel : t.doctor.followUpLabel}</span>
         <span className="h-3 w-px bg-[#E5E7EB] dark:bg-[#374151]" />
         <span>
-          {appointment.scheduled_start.slice(11, 16)}
+          {formatTime(appointment.scheduled_start)}
         </span>
       </div>
 
       {/* Bottom row: doctor + queue action */}
-      {doctor && (
-        <div className="mt-2.5 flex items-center justify-between gap-2">
+      <div className="mt-2.5 flex items-center justify-between gap-2">
+        {doctor ? (
           <div className="flex items-center gap-1.5">
             <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#E5E7EB] text-[10px] font-semibold text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
               {getDoctorInitials(doctor)}
             </span>
             <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">{doctor.full_name}</span>
           </div>
+        ) : (
+          <div /> /* spacer so actions stay right-aligned */
+        )}
 
-          {isWaiting && (
-            <span className="inline-flex items-center gap-1 rounded-[6px] bg-[#0F766E]/[0.08] px-2 py-1 text-xs font-medium text-[#0F766E]">
+        {isWaiting && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onCallNext() }}
+            disabled={hasInConsultation}
+            className={`inline-flex items-center gap-1 rounded-[6px] px-2 py-1 text-xs font-medium transition-colors ${
+              hasInConsultation
+                ? "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed dark:bg-[#374151] dark:text-[#6B7280]"
+                : "bg-[#0F766E]/[0.08] text-[#0F766E] hover:bg-[#0F766E]/[0.16]"
+            }`}
+            title={hasInConsultation ? t.doctor.alreadyInConsultationHint : undefined}
+          >
+            <Play className="h-3.5 w-3.5" strokeWidth={1.5} />
+            {t.receptionist.callNext}
+          </button>
+        )}
+        {isCalled && (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); if (canCallAgain) onCallAgain() }}
+              disabled={!canCallAgain}
+              className={`inline-flex items-center gap-1 rounded-[6px] px-2 py-1 text-xs font-medium transition-colors ${
+                canCallAgain
+                  ? "bg-[#9333EA]/[0.08] text-[#9333EA] hover:bg-[#9333EA]/[0.16]"
+                  : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed dark:bg-[#374151] dark:text-[#6B7280]"
+              }`}
+              title={!canCallAgain ? `${callAgainSecondsLeft}s` : undefined}
+            >
+              <PhoneCall className="h-3.5 w-3.5" strokeWidth={1.5} />
+              {canCallAgain ? t.receptionist.callAgain : `${callAgainSecondsLeft}s`}
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onStartConsultation() }}
+              className="inline-flex items-center gap-1 rounded-[6px] bg-[#0F766E]/[0.08] px-2 py-1 text-xs font-medium text-[#0F766E] transition-colors hover:bg-[#0F766E]/[0.16]"
+            >
               <Stethoscope className="h-3.5 w-3.5" strokeWidth={1.5} />
-              {t.receptionist.callNext}
-            </span>
-          )}
-        </div>
-      )}
-    </button>
+              {t.receptionist.startConsultation}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
-export function QueueRail() {
+export function QueueRail({ appointments, patients, doctors, serverNow, selectedId, onSelect, onCallNext, onCallAgain, onStartConsultation }: Props) {
   const { t } = useT()
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const appointments = getTodayAppointments(DOCTOR_ID)
+  const patientMap = new Map(patients.map((p) => [p.id, p]))
+  const doctorMap = new Map(doctors.map((d) => [d.id, d]))
+
   const activeAppointments = appointments.filter(
-    (a) => a.status === "waiting" || a.status === "in_consultation",
+    (a) => a.status === "waiting" || a.status === "called" || a.status === "in_consultation",
   )
+
+  // Check if any patient is currently in consultation
+  const hasInConsultation = activeAppointments.some((a) => a.status === "in_consultation")
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -144,15 +217,6 @@ export function QueueRail() {
             {activeAppointments.length}
           </span>
         </div>
-
-        {/* Quick call icon */}
-        <button
-          type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#E5E7EB] text-[#6B7280] transition-colors hover:text-[#0F766E] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:text-[#0F766E]"
-          aria-label={t.receptionist.callNext}
-        >
-          <PhoneCall className="h-[18px] w-[18px]" strokeWidth={1.5} />
-        </button>
       </div>
 
       {/* Scrollable queue list */}
@@ -171,15 +235,28 @@ export function QueueRail() {
           </div>
         ) : (
           <div className="flex flex-col gap-3 p-4">
-            {activeAppointments.map((apt) => (
-              <QueueCard
-                key={apt.id}
-                appointment={apt}
-                isSelected={selectedId === apt.id}
-                onSelect={() => setSelectedId(apt.id)}
-                t={t}
-              />
-            ))}
+            {activeAppointments.map((apt) => {
+              const patient = patientMap.get(apt.patient_id)
+              const doctor = doctorMap.get(apt.doctor_id)
+              if (!patient) return null
+
+              return (
+                <QueueCard
+                  key={apt.id}
+                  appointment={apt}
+                  patient={patient}
+                  doctor={doctor}
+                  isSelected={selectedId === apt.id}
+                  hasInConsultation={hasInConsultation}
+                  onSelect={() => onSelect(apt.id)}
+                  onCallNext={() => onCallNext(apt.id)}
+                  onCallAgain={() => onCallAgain(apt.id)}
+                  onStartConsultation={() => onStartConsultation(apt.id)}
+                  serverNow={serverNow}
+                  t={t}
+                />
+              )
+            })}
           </div>
         )}
       </div>

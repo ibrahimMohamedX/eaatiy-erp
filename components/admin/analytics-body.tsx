@@ -6,15 +6,36 @@ import { AppointmentsTab } from "./appointments-tab"
 import { DoctorsTab } from "./doctors-tab"
 import { AuditLog } from "./audit-log"
 import { useT } from "@/lib/i18n/use-t"
+import type { DashboardData } from "@/lib/actions/admin/get-dashboard-data"
+import type { RevenueTabData } from "@/lib/actions/admin/get-revenue-data"
+import type { AppointmentRow } from "@/lib/actions/admin/get-appointments-data"
+import type { AuditLogEntry } from "@/lib/actions/admin/get-audit-data"
 
 export type TabKey = "overview" | "revenue" | "appointments" | "doctors" | "audit"
 
 type Props = {
   activeTab: TabKey
   onTabChange: (tab: TabKey) => void
+  dashboardData: DashboardData | null
+  revenueData: RevenueTabData | null
+  appointmentRows: AppointmentRow[] | null
+  auditEntries: AuditLogEntry[] | null
+  onAuditFilterChange?: (filters: { targetTable?: string; action?: string; actorId?: string; since?: string; searchRowId?: string }) => void
+  isLoading: boolean
+  error: string | null
 }
 
-export function AnalyticsBody({ activeTab, onTabChange }: Props) {
+export function AnalyticsBody({
+  activeTab,
+  onTabChange,
+  dashboardData,
+  revenueData,
+  appointmentRows,
+  auditEntries,
+  onAuditFilterChange,
+  isLoading,
+  error,
+}: Props) {
   const { t } = useT()
 
   const TABS: { key: TabKey; label: string }[] = [
@@ -53,14 +74,28 @@ export function AnalyticsBody({ activeTab, onTabChange }: Props) {
         </div>
       </div>
 
+      {/* Loading / Error states */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-16">
+          <p className="text-sm text-[#6B7280] dark:text-[#9CA3AF]">Loading…</p>
+        </div>
+      )}
+      {error && !isLoading && (
+        <div className="mx-6 mt-4 rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 text-xs text-[#DC2626] dark:border-[#7F1D1D] dark:bg-[#450A0A] dark:text-[#FCA5A5]">
+          {error}
+        </div>
+      )}
+
       {/* Active tab body */}
-      <div className="flex-1 overflow-y-auto">
-        {activeTab === "overview" && <OverviewTab />}
-        {activeTab === "revenue" && <RevenueTab />}
-        {activeTab === "appointments" && <AppointmentsTab />}
-        {activeTab === "doctors" && <DoctorsTab />}
-        {activeTab === "audit" && <AuditLog />}
-      </div>
+      {!isLoading && (
+        <div className="flex-1 overflow-y-auto">
+          {activeTab === "overview" && <OverviewTab data={dashboardData} />}
+          {activeTab === "revenue" && <RevenueTab data={revenueData} />}
+          {activeTab === "appointments" && <AppointmentsTab rows={appointmentRows} />}
+          {activeTab === "doctors" && <DoctorsTab data={dashboardData} />}
+          {activeTab === "audit" && <AuditLog entries={auditEntries} onFilterChange={onAuditFilterChange} />}
+        </div>
+      )}
     </div>
   )
 }

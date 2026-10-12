@@ -1,0 +1,27 @@
+# ============================================================================
+# Development PostgreSQL — Phase 2A
+# ============================================================================
+# docker compose up -d postgres
+# Connection string: postgres://meridian:meridian_dev@localhost:5432/meridian_identity
+# ============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: meridian-dev-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: meridian
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-meridian_dev}
+      POSTGRES_DB: meridian_identity
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meridian -d meridian_identity"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
