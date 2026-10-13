@@ -23,12 +23,10 @@ export function SuperAdminTopBar({
   const tabKeys: SuperAdminTab[] = ["tenants", "licensing", "audit"]
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-[#E5E7EB] bg-white px-6 dark:border-[#374151] dark:bg-[#1F2937]">
+    <header className="flex h-16 items-center justify-between border-b border-line bg-card/60 px-6 backdrop-blur-sm">
       <div className="flex items-center gap-6">
         {/* Title */}
-        <h1 className="text-sm font-semibold uppercase tracking-wider text-[#111827] dark:text-[#F9FAFB]">
-          {sa.superAdminConsole}
-        </h1>
+        <h1 className="archai-eyebrow">{sa.superAdminConsole}</h1>
 
         {/* Tab switcher */}
         <nav className="flex items-center gap-1" role="tablist">
@@ -40,11 +38,11 @@ export function SuperAdminTopBar({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => onTabChange(key)}
-                className={`inline-flex h-8 items-center rounded-[6px] px-3 text-sm font-medium transition-colors ${
+                className={
                   isActive
-                    ? "bg-[#0F766E] text-white"
-                    : "text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:bg-[#374151] dark:hover:text-[#F9FAFB]"
-                }`}
+                    ? "inline-flex h-8 items-center rounded-lg bg-accent px-3 text-sm font-medium text-foreground"
+                    : "inline-flex h-8 items-center rounded-lg px-3 text-sm text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground"
+                }
               >
                 {tabLabels[idx]}
               </button>
@@ -55,13 +53,13 @@ export function SuperAdminTopBar({
 
       {/* Right cluster */}
       <div className="flex items-center gap-3">
-        {/* Provision button (only on tenants tab) */}
+        {/* Provision button (only on tenants tab) — the single Arc action of this screen */}
         {activeTab === "tenants" && (
           <button
             onClick={onProvision}
-            className="inline-flex h-9 items-center gap-1.5 rounded-[8px] bg-[#0F766E] px-4 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/85 active:translate-y-px"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="size-4" strokeWidth={1.75} />
             {sa.provisionNewTenant}
           </button>
         )}
@@ -70,11 +68,11 @@ export function SuperAdminTopBar({
         <button
           type="button"
           onClick={() => auth.logout()}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-[#FEF2F2] hover:text-[#DC2626] dark:text-[#9CA3AF] dark:hover:bg-[#450A0A] dark:hover:text-[#FCA5A5]"
+          className="flex size-9 items-center justify-center rounded-lg text-mist transition-colors duration-200 hover:bg-err/10 hover:text-err"
           aria-label={t.common.logOut}
           title={t.common.logOut}
         >
-          <LogOut className="h-[18px] w-[18px]" strokeWidth={1.5} />
+          <LogOut className="size-[18px]" strokeWidth={1.75} />
         </button>
       </div>
     </header>

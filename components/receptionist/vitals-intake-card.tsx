@@ -22,34 +22,34 @@ export function VitalsIntakeCard() {
   ]
 
   return (
-    <div className="flex flex-col rounded-[12px] border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
-      <h2 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.receptionist.triageCaptureVitals}</h2>
-      <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.receptionist.triageDescription}</p>
+    <div className="flex flex-col rounded-2xl border border-line bg-card p-5">
+      <h2 className="text-sm font-semibold text-foreground">{t.receptionist.triageCaptureVitals}</h2>
+      <p className="mt-1 text-xs text-muted-foreground">{t.receptionist.triageDescription}</p>
 
       <div className="mt-4 grid grid-cols-2 gap-4">
         {FIELDS.map((field) => (
           <div key={field.labelKey} className="flex flex-col">
-            <label className="mb-1.5 text-xs font-medium text-[#111827] dark:text-[#F9FAFB]">{field.label}</label>
-            <div className="flex items-center rounded-[8px] border border-[#E5E7EB] bg-white pr-3 transition-colors focus-within:border-[#0F766E] focus-within:ring-2 focus-within:ring-[#0F766E]/20 dark:border-[#374151] dark:bg-[#1F2937]">
+            <label className="mb-1.5 text-xs font-medium text-silver">{field.label}</label>
+            <div className="flex items-center rounded-lg border border-line bg-card pe-3 transition-colors duration-200 focus-within:border-ring focus-within:[box-shadow:var(--glow-soft)] dark:bg-ink">
               <input
                 type="text"
                 inputMode="decimal"
                 placeholder={field.placeholder}
                 aria-label={field.ariaLabel}
-                className="h-10 w-full rounded-[8px] bg-transparent px-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:outline-none dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF]"
+                className="ltr-in-rtl h-10 w-full rounded-lg bg-transparent px-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
               />
-              <span className="whitespace-nowrap text-xs text-[#6B7280] dark:text-[#9CA3AF]">{field.unit}</span>
+              <span className="whitespace-nowrap font-mono text-xs text-mist">{field.unit}</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Primary button */}
+      {/* Secondary action — this screen's single Arc button lives in the top bar */}
       <button
         type="button"
-        className="mt-5 flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-[#0F766E] text-sm font-medium text-white transition-opacity hover:opacity-90"
+        className="mt-5 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-line text-sm font-medium text-silver transition-colors duration-200 hover:border-mist hover:text-foreground"
       >
-        <BellRing className="h-[18px] w-[18px]" strokeWidth={1.5} />
+        <BellRing className="size-[18px]" strokeWidth={1.75} />
         {t.receptionist.saveVitalsNotify}
       </button>
     </div>

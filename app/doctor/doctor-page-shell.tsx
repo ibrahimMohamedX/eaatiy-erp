@@ -123,7 +123,7 @@ export function DoctorPageShell({ initialData }: Props) {
         return (
           <>
             {/* Left rail — 28%, independently scrollable */}
-            <section className="h-full w-[28%] shrink-0 overflow-hidden bg-white dark:bg-[#1F2937]">
+            <section className="h-full w-[28%] shrink-0 overflow-hidden bg-card">
               <QueueRail
                 appointments={appointments}
                 patients={patients}
@@ -138,13 +138,14 @@ export function DoctorPageShell({ initialData }: Props) {
             </section>
 
             {/* Thin vertical divider */}
-            <div className="h-full w-px shrink-0 bg-[#E5E7EB] dark:bg-[#374151]" aria-hidden="true" />
+            <div className="h-full w-px shrink-0 bg-line" aria-hidden="true" />
 
             {/* Right workspace — 72% */}
             <section className="h-full min-w-0 flex-1">
               {/* Data error banner */}
               {dataError && (
-                <div className="mx-4 mt-4 rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 text-xs text-[#DC2626] dark:border-[#7F1D1D] dark:bg-[#450A0A] dark:text-[#FCA5A5]">
+                <div className="mx-4 mt-4 flex items-center gap-2.5 rounded-lg bg-err/10 px-4 py-3 text-sm font-medium text-err">
+                  <span className="size-2 shrink-0 rounded-full bg-err" />
                   {dataError}
                 </div>
               )}
@@ -161,13 +162,13 @@ export function DoctorPageShell({ initialData }: Props) {
         return (
           <section className="flex h-full w-full flex-1 items-center justify-center">
             <div className="text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0F766E]/[0.08] mx-auto">
-                <Users className="h-7 w-7 text-[#0F766E]" strokeWidth={1.5} />
+              <div className="mx-auto flex size-14 items-center justify-center rounded-xl bg-arc/10">
+                <Users className="size-7 text-arc" strokeWidth={1.75} />
               </div>
-              <p className="mt-4 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+              <p className="mt-4 text-sm font-medium text-foreground">
                 {t.doctor.overviewPlaceholder}
               </p>
-              <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {t.doctor.overviewDesc}
               </p>
             </div>
@@ -178,13 +179,13 @@ export function DoctorPageShell({ initialData }: Props) {
         return (
           <section className="flex h-full w-full flex-1 items-center justify-center">
             <div className="text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0F766E]/[0.08] mx-auto">
-                <Users className="h-7 w-7 text-[#0F766E]" strokeWidth={1.5} />
+              <div className="mx-auto flex size-14 items-center justify-center rounded-xl bg-arc/10">
+                <Users className="size-7 text-arc" strokeWidth={1.75} />
               </div>
-              <p className="mt-4 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+              <p className="mt-4 text-sm font-medium text-foreground">
                 {t.doctor.patientsPlaceholder}
               </p>
-              <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {t.doctor.patientsDesc}
               </p>
             </div>
@@ -195,13 +196,13 @@ export function DoctorPageShell({ initialData }: Props) {
         return (
           <section className="flex h-full w-full flex-1 items-center justify-center">
             <div className="text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0F766E]/[0.08] mx-auto">
-                <CalendarDays className="h-7 w-7 text-[#0F766E]" strokeWidth={1.5} />
+              <div className="mx-auto flex size-14 items-center justify-center rounded-xl bg-arc/10">
+                <CalendarDays className="size-7 text-arc" strokeWidth={1.75} />
               </div>
-              <p className="mt-4 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+              <p className="mt-4 text-sm font-medium text-foreground">
                 {t.doctor.schedulePlaceholder}
               </p>
-              <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {t.doctor.scheduleDesc}
               </p>
             </div>
@@ -214,7 +215,7 @@ export function DoctorPageShell({ initialData }: Props) {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#F9FAFB] dark:bg-[#111827]">
+    <div className="flex h-screen w-full overflow-hidden bg-background">
       <DoctorSidebar activeView={activeView} onNavigate={setActiveView} />
 
       {/* Split-screen: left rail + right workspace */}

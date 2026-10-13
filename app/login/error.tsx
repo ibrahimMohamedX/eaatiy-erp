@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useT } from "@/lib/i18n/use-t"
+import { BusPaths } from "@/components/archai/bus-paths"
 
 export default function LoginError({
   error,
@@ -16,17 +17,22 @@ export default function LoginError({
   }, [error])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F9FAFB] dark:bg-[#111827]">
-      <div className="max-w-md rounded-[12px] border border-[#E5E7EB] bg-white p-8 text-center dark:border-[#374151] dark:bg-[#1F2937]">
-        <h2 className="text-lg font-semibold text-[#111827] dark:text-[#F9FAFB]">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background">
+      <BusPaths active={false} />
+      <div className="relative max-w-md rounded-2xl border border-err/30 bg-card p-8 text-center">
+        <h2 className="font-display text-2xl font-bold text-foreground">
           {t.errors.genericTitle}
         </h2>
-        <p className="mt-2 text-sm text-[#6B7280] dark:text-[#9CA3AF]">
-          {t.errors.genericDesc}
-        </p>
+        <div
+          className="mt-4 flex items-center justify-center gap-2.5 rounded-lg bg-err/10 px-4 py-3 text-sm font-medium text-err"
+          role="alert"
+        >
+          <span className="size-2 shrink-0 rounded-full bg-err" />
+          <span>{t.errors.genericDesc}</span>
+        </div>
         <button
           onClick={reset}
-          className="mt-6 inline-flex h-10 items-center justify-center rounded-[8px] bg-[#0F766E] px-6 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className="mt-6 inline-flex h-10 items-center justify-center rounded-lg border border-line px-6 text-sm font-medium text-silver transition-colors duration-200 hover:border-mist hover:text-foreground"
         >
           {t.common.retry}
         </button>

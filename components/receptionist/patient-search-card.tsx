@@ -32,27 +32,27 @@ export function PatientSearchCard() {
   }
 
   return (
-    <div className="flex flex-col rounded-[12px] border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
-      <h2 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.receptionist.patientSearch}</h2>
+    <div className="flex flex-col rounded-2xl border border-line bg-card p-5">
+      <h2 className="text-sm font-semibold text-foreground">{t.receptionist.patientSearch}</h2>
 
       {/* Search input */}
       <div className="relative mt-3">
         <Search
-          className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#6B7280] dark:text-[#9CA3AF]"
-          strokeWidth={1.5}
+          className="pointer-events-none absolute start-3 top-1/2 size-[18px] -translate-y-1/2 text-mist"
+          strokeWidth={1.75}
         />
         <input
           type="text"
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
           placeholder={t.common.searchPatientPlaceholder}
-          className="h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white pl-10 pr-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF]"
+          className="h-10 w-full rounded-lg border border-line bg-background ps-10 pe-3 text-sm text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none"
         />
       </div>
 
       {/* Results dropdown */}
       {results.length > 0 && (
-        <div className="mt-2 overflow-hidden rounded-[8px] border border-[#E5E7EB] dark:border-[#374151]">
+        <div className="mt-2 animate-archai-fade-in overflow-hidden rounded-lg border border-line bg-popover">
           {results.map((patient) => {
             const age = deriveAge(patient.date_of_birth)
             const initials = patient.full_name
@@ -66,17 +66,17 @@ export function PatientSearchCard() {
               <button
                 key={patient.id}
                 type="button"
-                className="flex w-full items-center gap-3 border-b border-[#E5E7EB] px-3 py-2.5 text-left last:border-b-0 transition-colors hover:bg-[#F9FAFB] dark:border-[#374151] dark:hover:bg-[#374151]"
+                className="flex w-full items-center gap-3 border-b border-line px-3 py-2.5 text-start transition-colors duration-200 last:border-b-0 hover:bg-accent"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] text-[11px] font-semibold text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-steel text-[11px] font-semibold text-silver">
                   {initials}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-[#111827] dark:text-[#F9FAFB]">
+                  <p className="truncate text-sm text-foreground">
                     {idx >= 0 ? (
                       <>
                         {patient.full_name.slice(0, idx)}
-                        <span className="font-semibold text-[#0F766E]">
+                        <span className="font-semibold text-arc">
                           {patient.full_name.slice(idx, idx + query.length)}
                         </span>
                         {patient.full_name.slice(idx + query.length)}
@@ -85,7 +85,7 @@ export function PatientSearchCard() {
                       patient.full_name
                     )}
                   </p>
-                  <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                  <p className="font-mono text-xs text-mist ltr-in-rtl">
                     {patient.phone} · {age} yrs
                   </p>
                 </div>
@@ -97,14 +97,14 @@ export function PatientSearchCard() {
 
       {/* Empty state when no query */}
       {query.length === 0 && (
-        <p className="mt-3 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+        <p className="mt-3 text-xs text-muted-foreground">
           {t.common.searchHint}
         </p>
       )}
 
       {/* No results */}
       {query.length >= 2 && results.length === 0 && (
-        <p className="mt-3 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+        <p className="mt-3 text-xs text-muted-foreground">
           {t.common.noMatch.replace("{query}", query)}
         </p>
       )}

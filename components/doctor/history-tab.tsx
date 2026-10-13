@@ -21,16 +21,16 @@ export function HistoryTab({ patient, history, doctors }: Props) {
   if (history.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <FileText className="h-10 w-10 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-        <p className="mt-4 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">{t.doctor.noPastEncounters}</p>
-        <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.doctor.noPastEncountersDesc}</p>
+        <FileText className="size-10 text-mist" strokeWidth={1.75} />
+        <p className="mt-4 text-sm font-medium text-foreground">{t.doctor.noPastEncounters}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t.doctor.noPastEncountersDesc}</p>
       </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-4 p-5">
-      <h3 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.doctor.pastEncounters}</h3>
+      <h3 className="font-display text-base font-semibold text-foreground">{t.doctor.pastEncounters}</h3>
 
       {history.map((apt) => {
         const doctor = doctorMap.get(apt.doctor_id)
@@ -39,21 +39,23 @@ export function HistoryTab({ patient, history, doctors }: Props) {
         return (
           <div
             key={apt.id}
-            className="rounded-[12px] border border-[#E5E7EB] bg-white p-4 dark:border-[#374151] dark:bg-[#1F2937]"
+            className="rounded-lg border border-line bg-card p-4 transition-colors duration-200 hover:border-mist"
           >
             {/* Header row */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#059669]/[0.12]">
-                  <Stethoscope className="h-[18px] w-[18px] text-[#059669]" strokeWidth={1.5} />
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-ok/10">
+                  <Stethoscope className="size-[18px] text-ok" strokeWidth={1.75} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">
+                  <p className="text-sm font-semibold text-foreground">
                     {apt.type === "new" ? t.doctor.initialVisit : t.doctor.followUpVisit}
                   </p>
-                  <p className="flex items-center gap-1.5 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
-                    <Calendar className="h-3.5 w-3.5" strokeWidth={1.5} />
-                    {apt.completed_at?.slice(0, 10)} · {apt.completed_at?.slice(11, 16)}
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Calendar className="size-3.5" strokeWidth={1.75} />
+                    <span className="ltr-in-rtl font-mono">
+                      {apt.completed_at?.slice(0, 10)} · {apt.completed_at?.slice(11, 16)}
+                    </span>
                   </p>
                 </div>
               </div>
@@ -61,12 +63,12 @@ export function HistoryTab({ patient, history, doctors }: Props) {
               {/* Doctor */}
               {doctor && (
                 <div className="flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#E5E7EB] text-[10px] font-semibold text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-xl border border-line text-[10px] font-semibold text-silver">
                     {getDoctorInitials(doctor)}
                   </span>
-                  <div className="text-right">
-                    <p className="text-sm text-[#111827] dark:text-[#F9FAFB]">{doctor.full_name}</p>
-                    <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                  <div className="text-end">
+                    <p className="text-sm text-foreground">{doctor.full_name}</p>
+                    <p className="text-xs text-muted-foreground">
                       {t.doctor.patientWas.replace("{age}", String(ageAtVisit))}
                     </p>
                   </div>

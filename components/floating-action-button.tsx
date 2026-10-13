@@ -120,11 +120,11 @@ export function FloatingActionButton() {
     >
       {/* ---- Expandable panels ---- */}
       {open && (
-        <div className="flex flex-col gap-3">
+        <div className="flex animate-archai-fade-up flex-col gap-3">
           {/* Theme panel */}
           {panel === "theme" && (
-            <div className="w-[200px] rounded-[12px] border border-[#E5E7EB] bg-white p-3 shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:border-[#374151] dark:bg-[#1F2937] dark:shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280] dark:text-[#9CA3AF]">
+            <div className="archai-glass w-[200px] rounded-2xl p-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase text-mist">
                 {t.floating.theme}
               </p>
               <div className="flex flex-col gap-1">
@@ -136,17 +136,17 @@ export function FloatingActionButton() {
                       key={opt.key}
                       type="button"
                       onClick={() => handleThemeSelect(opt.key)}
-                      className={`flex items-center gap-3 rounded-[8px] px-3 py-2 text-sm transition-colors ${
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200 ${
                         isActive
-                          ? "bg-[#0F766E]/[0.08] font-medium text-[#0F766E]"
-                          : "text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:bg-[#374151] dark:hover:text-[#E5E7EB]"
+                          ? "bg-accent font-medium text-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground"
                       }`}
                     >
-                      <Icon className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                      <Icon className="size-[18px]" strokeWidth={1.75} />
                       {/* Resolve the label via the same dot-path pattern */}
                       {resolvePanelLabel(opt.labelKey, t)}
                       {isActive && (
-                        <span className="ml-auto h-2 w-2 rounded-full bg-[#0F766E]" />
+                        <span className="ms-auto size-2 rounded-full bg-arc" />
                       )}
                     </button>
                   )
@@ -157,8 +157,8 @@ export function FloatingActionButton() {
 
           {/* Language panel */}
           {panel === "language" && (
-            <div className="w-[200px] rounded-[12px] border border-[#E5E7EB] bg-white p-3 shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:border-[#374151] dark:bg-[#1F2937] dark:shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280] dark:text-[#9CA3AF]">
+            <div className="archai-glass w-[200px] rounded-2xl p-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase text-mist">
                 {t.floating.language}
               </p>
               <div className="flex flex-col gap-1">
@@ -170,18 +170,17 @@ export function FloatingActionButton() {
                       key={opt.key}
                       type="button"
                       onClick={() => handleLocaleSelect(opt.key)}
-                      className={`flex items-center gap-3 rounded-[8px] px-3 py-2 text-sm transition-colors ${
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200 ${
                         isActive
-                          ? "bg-[#0F766E]/[0.08] font-medium text-[#0F766E]"
-                          : "text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:bg-[#374151] dark:hover:text-[#E5E7EB]"
+                          ? "bg-accent font-medium text-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground"
                       }`}
                     >
-                      <span className="text-base leading-none">{cfg.flag}</span>
                       <span className={isActive ? "font-semibold" : ""}>
                         {cfg.nativeLabel}
                       </span>
                       {isActive && (
-                        <span className="ml-auto h-2 w-2 rounded-full bg-[#0F766E]" />
+                        <span className="ms-auto size-2 rounded-full bg-arc" />
                       )}
                     </button>
                   )
@@ -192,29 +191,29 @@ export function FloatingActionButton() {
 
           {/* Menu bar — two icon buttons */}
           {!panel && (
-            <div className="flex items-center gap-2 rounded-[12px] border border-[#E5E7EB] bg-white p-2 shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:border-[#374151] dark:bg-[#1F2937] dark:shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
+            <div className="archai-glass flex items-center gap-2 rounded-2xl p-2">
               <button
                 type="button"
                 onClick={() => handlePanel("theme")}
-                className="flex items-center gap-2 rounded-[8px] px-3 py-2 text-sm text-[#6B7280] transition-colors hover:bg-[#F9FAFB] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:bg-[#374151] dark:hover:text-[#E5E7EB]"
+                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground"
               >
                 {resolved === "dark" ? (
-                  <Moon className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                  <Moon className="size-[18px]" strokeWidth={1.75} />
                 ) : (
-                  <Sun className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                  <Sun className="size-[18px]" strokeWidth={1.75} />
                 )}
                 <span>{t.floating.theme}</span>
-                <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
+                <ChevronRight className="size-4" strokeWidth={1.75} />
               </button>
 
               <button
                 type="button"
                 onClick={() => handlePanel("language")}
-                className="flex items-center gap-2 rounded-[8px] px-3 py-2 text-sm text-[#6B7280] transition-colors hover:bg-[#F9FAFB] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:bg-[#374151] dark:hover:text-[#E5E7EB]"
+                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground"
               >
-                <Globe className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                <Globe className="size-[18px]" strokeWidth={1.75} />
                 <span>{t.floating.language}</span>
-                <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
+                <ChevronRight className="size-4" strokeWidth={1.75} />
               </button>
             </div>
           )}
@@ -226,12 +225,12 @@ export function FloatingActionButton() {
         type="button"
         onClick={handleToggle}
         aria-label={open ? "Close settings" : "Open settings"}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0F766E] text-white shadow-[0_4px_16px_rgba(15,118,110,0.32)] transition-all hover:bg-[#115E59] hover:shadow-[0_4px_20px_rgba(15,118,110,0.40)] active:scale-95"
+        className="flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground archai-glow transition-all duration-200 hover:bg-primary/85 active:scale-95"
       >
         {open ? (
-          <X className="h-5 w-5" strokeWidth={1.5} />
+          <X className="size-5" strokeWidth={1.75} />
         ) : (
-          <Settings className="h-5 w-5" strokeWidth={1.5} />
+          <Settings className="size-5" strokeWidth={1.75} />
         )}
       </button>
     </div>

@@ -17,6 +17,13 @@ import type { AuditLogEntry } from "@/lib/actions/admin/get-audit-data"
  * Sub-components (dropdown, diff, timeline entry)
  * --------------------------------------------------------------------------- */
 
+/** Archai solid tile per audit action (insert → ok, update → arc, delete → err) */
+const ACTION_TILE: Record<string, string> = {
+  insert: "bg-ok",
+  update: "bg-arc",
+  delete: "bg-err",
+}
+
 function Dropdown({
   label,
   dotColors,
@@ -35,27 +42,27 @@ function Dropdown({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] transition-colors hover:border-[#0F766E] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB]"
+        className="inline-flex items-center gap-2 rounded-lg border border-line bg-card px-3 py-2 text-sm text-silver transition-colors duration-200 hover:border-mist hover:text-foreground"
       >
         {dotColors && (
           <span className="flex items-center gap-0.5">
             {dotColors.map((c) => (
-              <span key={c} className="h-2 w-2 rounded-full" style={{ backgroundColor: c }} />
+              <span key={c} className="size-2 rounded-full" style={{ backgroundColor: c }} />
             ))}
           </span>
         )}
         {label}
-        <ChevronDown className="h-4 w-4 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
+        <ChevronDown className="h-4 w-4 text-mist" strokeWidth={1.75} />
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full z-20 mt-1 min-w-[160px] rounded-lg border border-[#E5E7EB] bg-white py-1 shadow-[0_4px_24px_rgba(0,0,0,0.12)] dark:border-[#374151] dark:bg-[#1F2937]">
+          <div className="absolute start-0 top-full z-20 mt-1 min-w-[160px] animate-archai-fade-in rounded-lg border border-line bg-popover py-1 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.28)]">
             {options.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
-                className="w-full px-3 py-2 text-left text-sm text-[#111827] hover:bg-[#F9FAFB] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
+                className="w-full px-3 py-2 text-start text-sm text-foreground transition-colors duration-200 hover:bg-accent"
                 onClick={() => {
                   onSelect(opt.value)
                   setOpen(false)
@@ -74,7 +81,7 @@ function Dropdown({
 function DateDivider({ label }: { label: string }) {
   return (
     <div className="relative flex justify-center py-2">
-      <span className="rounded-full border border-[#E5E7EB] bg-white px-3 py-1 text-xs font-medium text-[#6B7280] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#9CA3AF]">
+      <span className="rounded-full border border-line bg-card px-3 py-1 font-mono text-xs font-medium text-mist ltr-in-rtl">
         {label}
       </span>
     </div>
@@ -89,10 +96,10 @@ function ChangeDiff({
   t: Record<string, any>
 }) {
   return (
-    <div className="mt-3 flex gap-px overflow-hidden rounded-lg border border-[#E5E7EB] bg-[#E5E7EB] text-sm dark:border-[#374151] dark:bg-[#374151]">
+    <div className="mt-3 flex gap-px overflow-hidden rounded-lg border border-line bg-line text-sm">
       {/* Before column */}
       <div className="flex-1">
-        <div className="bg-[#F9FAFB] px-3 py-2 text-xs font-medium uppercase tracking-wide text-[#6B7280] dark:bg-[#374151] dark:text-[#9CA3AF]">
+        <div className="bg-steel px-3 py-2 font-mono text-xs font-medium uppercase text-mist">
           {t.admin.auditBefore}
         </div>
         {changes.map((c) => (
@@ -101,7 +108,7 @@ function ChangeDiff({
       </div>
       {/* After column */}
       <div className="flex-1">
-        <div className="bg-[#F9FAFB] px-3 py-2 text-xs font-medium uppercase tracking-wide text-[#6B7280] dark:bg-[#374151] dark:text-[#9CA3AF]">
+        <div className="bg-steel px-3 py-2 font-mono text-xs font-medium uppercase text-mist">
           {t.admin.auditAfter}
         </div>
         {changes.map((c) => (
@@ -125,18 +132,18 @@ function FieldRow({
 }) {
   return (
     <div
-      className={`border-t border-[#E5E7EB] px-3 py-2 dark:border-[#374151] ${
-        highlight ? "bg-[#D97706]/[0.12]" : "bg-white dark:bg-[#1F2937]"
+      className={`border-t border-line px-3 py-2 ${
+        highlight ? "bg-warn/10" : "bg-card"
       }`}
     >
-      <div className="font-mono text-xs text-[#6B7280] dark:text-[#9CA3AF]">{field}</div>
+      <div className="font-mono text-xs text-mist">{field}</div>
       <div
         className={`mt-0.5 ${
           muted
-            ? "text-[#6B7280] line-through dark:text-[#9CA3AF]"
+            ? "text-mist line-through"
             : highlight
-              ? "font-medium text-[#111827] dark:text-[#F9FAFB]"
-              : "text-[#111827] dark:text-[#F9FAFB]"
+              ? "font-medium text-foreground"
+              : "text-foreground"
         }`}
       >
         {value}
@@ -159,34 +166,35 @@ function TimelineEntry({
   const Icon = entry.action === "insert" ? Plus : entry.action === "update" ? Pencil : Trash2
 
   return (
-    <div className="relative pl-12">
+    <div className="relative ps-12">
       {/* marker */}
       <span
-        className="absolute left-[9px] top-1 flex h-6 w-6 items-center justify-center rounded-full ring-4 ring-[#F9FAFB]"
-        style={{ backgroundColor: meta.color }}
+        className={`absolute start-[9px] top-1 flex h-6 w-6 items-center justify-center rounded-full ring-4 ring-background ${
+          ACTION_TILE[entry.action] ?? "bg-steel"
+        }`}
       >
-        <Icon className="h-3.5 w-3.5 text-white" strokeWidth={2} />
+        <Icon className="h-3.5 w-3.5 text-ink" strokeWidth={1.75} />
       </span>
 
-      <div className="rounded-xl border border-[#E5E7EB] bg-white p-4 shadow-[0_2px_8px_rgba(17,24,39,0.06)] dark:border-[#374151] dark:bg-[#1F2937] dark:shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
+      <div className="rounded-2xl border border-line bg-card p-4">
         {/* Top row */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0F766E]/[0.12] text-xs font-medium text-[#0F766E]">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-arc/10 text-xs font-medium text-arc">
               {entry.actorInitials}
             </span>
-            <span className="text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">{entry.actorName}</span>
-            <span className="rounded-full bg-[#F9FAFB] px-2 py-0.5 text-xs text-[#6B7280] dark:bg-[#374151] dark:text-[#9CA3AF]">
+            <span className="text-sm font-medium text-foreground">{entry.actorName}</span>
+            <span className="rounded-full bg-steel px-2 py-0.5 text-xs text-mist">
               {entry.actorRole}
             </span>
           </div>
-          <span className="shrink-0 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{entry.when}</span>
+          <span className="shrink-0 font-mono text-xs text-mist ltr-in-rtl">{entry.when}</span>
         </div>
 
         {/* Second row */}
         <div className="mt-2 flex items-center gap-2">
-          <span className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{entry.summary}</span>
-          <span className="rounded-md border border-[#E5E7EB] bg-[#F9FAFB] px-1.5 py-0.5 font-mono text-xs text-[#6B7280] dark:border-[#374151] dark:bg-[#374151] dark:text-[#9CA3AF]">
+          <span className="text-sm font-semibold text-foreground">{entry.summary}</span>
+          <span className="rounded-full border border-line bg-steel px-1.5 py-0.5 font-mono text-xs text-mist ltr-in-rtl">
             #{entry.targetRowId}
           </span>
         </div>
@@ -197,12 +205,12 @@ function TimelineEntry({
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#0F766E] hover:underline"
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-arc transition-colors hover:underline"
             >
               {expanded ? (
-                <ChevronUp className="h-3.5 w-3.5" strokeWidth={1.5} />
+                <ChevronUp className="h-3.5 w-3.5" strokeWidth={1.75} />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5" strokeWidth={1.5} />
+                <ChevronDown className="h-3.5 w-3.5" strokeWidth={1.75} />
               )}
               {t.admin.auditViewChanges}
             </button>
@@ -229,7 +237,7 @@ export function AuditLog({ entries, onFilterChange }: Props) {
   return (
     <div className="flex flex-col">
       {/* Sticky filter bar */}
-      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 border-b border-[#E5E7EB] bg-[#F9FAFB]/95 px-6 py-3 backdrop-blur dark:border-[#374151] dark:bg-[#111827]/95">
+      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 border-b border-line bg-background/95 px-6 py-3 backdrop-blur">
         <Dropdown
           label={t.admin.auditFilterBar.allTables}
           options={[
@@ -244,7 +252,7 @@ export function AuditLog({ entries, onFilterChange }: Props) {
         />
         <Dropdown
           label={t.admin.auditFilterBar.allActions}
-          dotColors={["#059669", "#2563EB", "#DC2626"]}
+          dotColors={["var(--ok)", "var(--arc)", "var(--err)"]}
           options={[
             { label: t.admin.auditFilterBar.allActions, value: "" },
             { label: t.admin.auditFilterBar.actionInsert, value: "insert" },
@@ -269,12 +277,12 @@ export function AuditLog({ entries, onFilterChange }: Props) {
             onFilterChange?.({ since })
           }}
         />
-        <div className="relative ml-auto min-w-[220px] flex-1 sm:flex-none">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
+        <div className="relative ms-auto min-w-[220px] flex-1 sm:flex-none">
+          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mist" strokeWidth={1.75} />
           <input
             type="text"
             placeholder={t.admin.auditFilterBar.searchId}
-            className="w-full rounded-lg border border-[#E5E7EB] bg-white py-2 pl-9 pr-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF]"
+            className="w-full rounded-lg border border-line bg-card py-2 ps-9 pe-3 text-sm text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none ltr-in-rtl dark:bg-ink"
             onChange={(e) => {
               const value = e.target.value.trim()
               onFilterChange?.({ searchRowId: value || undefined })
@@ -287,7 +295,7 @@ export function AuditLog({ entries, onFilterChange }: Props) {
       <div className="p-6">
         <div className="relative mx-auto max-w-3xl">
           {/* connector line */}
-          <span className="absolute bottom-2 left-[21px] top-2 w-px bg-[#E5E7EB] dark:bg-[#374151]" aria-hidden />
+          <span className="absolute bottom-2 start-[21px] top-2 w-px bg-line" aria-hidden />
 
           <div className="flex flex-col gap-4">
             {entries && entries.length > 0 ? (
@@ -296,7 +304,7 @@ export function AuditLog({ entries, onFilterChange }: Props) {
               ))
             ) : (
               <div className="py-16 text-center">
-                <p className="text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+                <p className="text-sm font-medium text-muted-foreground">
                   No audit entries found.
                 </p>
               </div>

@@ -1,13 +1,14 @@
 // ============================================================================
-// Color Utilities — 12% Opacity Rule Enforcement
+// Color Utilities — Archai Design System status tints
 // ============================================================================
-// Semantic status colors must always render as rgba(r,g,b,0.12) for backgrounds.
-// These helpers ensure consistency across the entire codebase.
+// Semantic status colors render as rgba(r,g,b,0.12) backgrounds (12% rule).
+// Source of truth: Archai semantic palette —
+//   ok #3DDC97 · warn #E9A24F · err #FF6B7A · arc #2ED2FF · copper #C48A5C
 // ============================================================================
 
 /**
  * Converts a hex color to its RGB components for use with the 12% opacity rule.
- * Accepts both 6-digit (#059669) and 3-digit (#abc) hex formats.
+ * Accepts both 6-digit (#3DDC97) and 3-digit (#abc) hex formats.
  */
 export function hexToRgb(hex: string): string {
   // Strip '#' prefix
@@ -27,22 +28,24 @@ export function hexToRgb(hex: string): string {
 
 /**
  * Returns the semantic status color as an rgba background value at exactly 12% opacity.
- * Usage: style={{ backgroundColor: statusBg("#059669") }}
+ * Usage: style={{ backgroundColor: statusBg("#3DDC97") }}
  */
 export function statusBg(hex: string): string {
   return `rgba(${hexToRgb(hex)},0.12)`
 }
 
 /**
- * Standard semantic status colors and their RGB representations.
+ * Archai semantic colors and their RGB representations.
  * The single source of truth for all status pill colors in the app.
  */
 export const SEMANTIC_COLORS = {
-  emerald: { hex: "#059669", rgb: "5,150,105" },
-  amber: { hex: "#D97706", rgb: "217,119,6" },
-  red: { hex: "#DC2626", rgb: "220,38,38" },
-  blue: { hex: "#2563EB", rgb: "37,99,235" },
+  ok: { hex: "#3DDC97", rgb: "61,220,151" },
+  warn: { hex: "#E9A24F", rgb: "233,162,79" },
+  err: { hex: "#FF6B7A", rgb: "255,107,122" },
+  arc: { hex: "#2ED2FF", rgb: "46,210,255" },
+  copper: { hex: "#C48A5C", rgb: "196,138,92" },
 } as const
 
-export const PRIMARY_TEAL = "#0F766E"
-export const PRIMARY_TEAL_RGB = "15,118,110"
+/** Archai signal color (Arc Blue) — the brand accent. */
+export const ARCHAI_ARC = "#2ED2FF"
+export const ARCHAI_ARC_RGB = "46,210,255"

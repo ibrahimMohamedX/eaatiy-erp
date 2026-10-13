@@ -8,10 +8,12 @@ import type { DashboardData } from "@/lib/actions/admin/get-dashboard-data"
 type KpiDef = {
   label: string
   icon: LucideIcon
-  iconColor: string
-  iconBg: string
+  /** Archai semantic tone class (text-arc / text-warn / text-ok / text-err / text-copper) */
+  tone: string
+  /** 10% tinted tile for the tone */
+  tile: string
   getValue: (data: DashboardData) => string
-  trend?: { pct: string; direction: "up" | "down"; color: string }
+  trend?: { pct: string; direction: "up" | "down"; tone: string }
 }
 
 function buildKpiDefs(t: Record<string, any>): KpiDef[] {
@@ -19,45 +21,45 @@ function buildKpiDefs(t: Record<string, any>): KpiDef[] {
     {
       label: t.admin.totalRevenue,
       icon: DollarSign,
-      iconColor: "#0F766E",
-      iconBg: "rgba(15,118,110,0.12)",
+      tone: "text-arc",
+      tile: "bg-arc/10",
       getValue: (d) => `$${d.revenueSummary.totalPaid.toLocaleString()}`,
-      trend: { pct: "+12%", direction: "up", color: "#059669" },
+      trend: { pct: "+12%", direction: "up", tone: "text-ok" },
     },
     {
       label: t.admin.outstandingBalance,
       icon: Wallet,
-      iconColor: "#D97706",
-      iconBg: "rgba(217,119,6,0.12)",
+      tone: "text-warn",
+      tile: "bg-warn/10",
       getValue: (d) => `$${d.revenueSummary.outstandingBalance.toLocaleString()}`,
-      trend: { pct: "+4%", direction: "up", color: "#DC2626" },
+      trend: { pct: "+4%", direction: "up", tone: "text-err" },
     },
     {
       label: t.admin.totalAppointments,
       icon: CalendarDays,
-      iconColor: "#2563EB",
-      iconBg: "rgba(37,99,235,0.12)",
+      tone: "text-warn",
+      tile: "bg-warn/10",
       getValue: (d) => String(d.appointmentStats.total),
     },
     {
       label: t.admin.newPatients,
       icon: UserPlus,
-      iconColor: "#059669",
-      iconBg: "rgba(5,150,105,0.12)",
+      tone: "text-copper",
+      tile: "bg-copper/10",
       getValue: (d) => String(d.newPatients),
     },
     {
       label: t.admin.completionRate,
       icon: CheckCircle2,
-      iconColor: "#0F766E",
-      iconBg: "rgba(15,118,110,0.12)",
+      tone: "text-ok",
+      tile: "bg-ok/10",
       getValue: (d) => `${d.appointmentStats.completionRate}%`,
     },
     {
       label: t.admin.cancellationRate,
       icon: XCircle,
-      iconColor: "#DC2626",
-      iconBg: "rgba(220,38,38,0.12)",
+      tone: "text-err",
+      tile: "bg-err/10",
       getValue: (d) => `${d.appointmentStats.cancellationRate}%`,
     },
   ]
@@ -79,35 +81,29 @@ export function KpiGrid({ data }: Props) {
         return (
           <div
             key={kpi.label}
-            className="flex flex-col justify-between rounded-xl border border-[#E5E7EB] bg-white p-4 dark:border-[#374151] dark:bg-[#1F2937]"
+            className="group flex flex-col justify-between rounded-2xl border border-line bg-card p-4 transition-all duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:border-mist"
           >
             <div className="flex items-start justify-between">
-              <span
-                className="flex h-9 w-9 items-center justify-center rounded-lg"
-                style={{ backgroundColor: kpi.iconBg }}
-              >
-                <Icon
-                  className="h-[18px] w-[18px]"
-                  strokeWidth={1.5}
-                  style={{ color: kpi.iconColor }}
-                />
+              <span className={`flex size-9 items-center justify-center rounded-xl ${kpi.tile}`}>
+                <Icon className={`size-[18px] ${kpi.tone}`} strokeWidth={1.75} />
               </span>
               {kpi.trend && (
                 <span
-                  className="flex items-center gap-0.5 text-xs font-medium"
-                  style={{ color: kpi.trend.color }}
+                  className={`flex items-center gap-0.5 text-xs font-medium ${kpi.trend.tone}`}
                 >
                   <ArrowUpRight
-                    className={`h-3.5 w-3.5 ${kpi.trend.direction === "down" ? "rotate-90" : ""}`}
-                    strokeWidth={1.5}
+                    className={`size-3.5 ${kpi.trend.direction === "down" ? "rotate-90" : ""}`}
+                    strokeWidth={1.75}
                   />
                   {kpi.trend.pct}
                 </span>
               )}
             </div>
             <div className="mt-3">
-              <div className="text-2xl font-semibold tracking-tight text-[#111827] dark:text-[#F9FAFB]">{value}</div>
-              <div className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{kpi.label}</div>
+              <div className="font-latin text-2xl font-semibold leading-none text-foreground ltr-in-rtl">
+                {value}
+              </div>
+              <div className="mt-1.5 text-xs text-muted-foreground">{kpi.label}</div>
             </div>
           </div>
         )

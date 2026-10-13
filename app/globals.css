@@ -4,8 +4,31 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================================
+ * ARCHAI DESIGN SYSTEM — TOKENS
+ * ============================================================================
+ * Source: "Archai Design System" (company brand book)
+ *   Dark is the identity ("الداكن هو الأساس") — light is the exception.
+ *   - Carbon  #1B2228  SURFACE · 60%
+ *   - Panel   #222B33  CARDS   · 20%
+ *   - Silver  #CCD3DA  TEXT    · 12%
+ *   - Arc     #2ED2FF  SIGNAL  · 6%
+ *   - Copper  #C48A5C  ACCENT  · 2%
+ * Rules:
+ *   - No colored gradient backgrounds. Only the Chrome gradient on frames.
+ *   - Glow only around Arc lines on dark backgrounds.
+ *   - Light theme swaps neons for "ink" variants (Arc Ink / Copper Ink).
+ *   - NO letter-spacing on Arabic. Latin digits everywhere.
+ * ========================================================================== */
+
 @theme inline {
-  --font-sans: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
+  /* Fonts — loaded via next/font in app/layout.tsx */
+  --font-sans: var(--font-plex-arabic), var(--font-readex), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-readex), ui-sans-serif, system-ui, sans-serif;
+  --font-latin: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, 'JetBrains Mono', monospace;
+
+  /* shadcn semantic colors */
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -37,6 +60,25 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
+
+  /* Archai named colors (generate text-arc, bg-panel, border-line, …) */
+  --color-arc: var(--arc);
+  --color-arc-ink: var(--arc-ink);
+  --color-copper: var(--copper);
+  --color-copper-ink: var(--copper-ink);
+  --color-carbon: var(--carbon);
+  --color-panel: var(--panel);
+  --color-steel: var(--steel);
+  --color-silver: var(--silver);
+  --color-mist: var(--mist);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-err: var(--err);
+
+  /* Radius scale — base 12px (Archai --r-m), 2xl ≈ 20px (Archai --r-l) */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -46,135 +88,258 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ---------------------------------------------------------------------------
+ * LIGHT THEME — the exception (docs/print). Neons become "ink" variants.
+ * ------------------------------------------------------------------------- */
+
 :root {
   color-scheme: light;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Archai Slate scale (light values) */
+  --carbon: #12181d;
+  --panel: #ffffff;
+  --steel: #e6eaee;
+  --silver: #3a4753;
+  --mist: #4a5966;
+  --line: #d5dde5;
+  --ink: #10161b;
+  --paper: #f1f4f7;
+
+  /* Signal — Arc Ink replaces Arc Blue for accessible text/buttons */
+  --arc: #07739b;
+  --arc-ink: #07739b;
+  --copper: #8a5a36;
+  --copper-ink: #8a5a36;
+  --ok: #0e7a4b;
+  --warn: #8a5a36;
+  --err: #b3243a;
+
+  /* Semantic shadcn mapping */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --primary: var(--arc-ink);
+  --primary-foreground: #f1f4f7;
+  --secondary: var(--steel);
+  --secondary-foreground: var(--ink);
+  --muted: #e9edf1;
+  --muted-foreground: var(--mist);
+  --accent: var(--steel);
+  --accent-foreground: var(--ink);
+  --destructive: var(--err);
+  --border: var(--line);
+  --input: #cfd6dd;
+  --ring: var(--arc-ink);
+  --chart-1: var(--arc-ink);
+  --chart-2: var(--copper-ink);
+  --chart-3: var(--ok);
+  --chart-4: #b37516;
+  --chart-5: var(--mist);
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--arc-ink);
+  --sidebar-primary-foreground: #f1f4f7;
+  --sidebar-accent: var(--steel);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--arc-ink);
+
+  /* Motion tokens (Archai 07/13) */
+  --fast: 120ms;
+  --base: 240ms;
+  --slow: 480ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Effects — glow restrained on light */
+  --glow: 0 0 0 1px var(--arc-ink);
+  --glow-soft: 0 0 0 4px rgba(7, 115, 155, 0.12);
+  --chrome: linear-gradient(135deg, #e6eaee 0%, #98a5b1 45%, #4a5966 100%);
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(19, 25, 30, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
 }
+
+/* ---------------------------------------------------------------------------
+ * DARK THEME — the Archai identity.
+ * ------------------------------------------------------------------------- */
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+
+  /* Archai Slate scale */
+  --carbon: #1b2228;
+  --panel: #222b33;
+  --steel: #2d3841;
+  --silver: #ccd3da;
+  --mist: #98a5b1;
+  --line: #3a4753;
+  --ink: #12181d;
+  --paper: #f1f4f7;
+
+  /* Signal */
+  --arc: #2ed2ff;
+  --arc-ink: #07739b;
+  --copper: #c48a5c;
+  --copper-ink: #8a5a36;
+  --ok: #3ddc97;
+  --warn: #e9a24f;
+  --err: #ff6b7a;
+
+  /* Semantic shadcn mapping */
+  --background: var(--carbon);
+  --foreground: var(--paper);
+  --card: var(--panel);
+  --card-foreground: var(--paper);
+  --popover: var(--panel);
+  --popover-foreground: var(--paper);
+  --primary: var(--arc);
+  --primary-foreground: var(--ink);
+  --secondary: var(--steel);
+  --secondary-foreground: var(--paper);
+  --muted: var(--steel);
+  --muted-foreground: var(--mist);
+  --accent: var(--steel);
+  --accent-foreground: var(--paper);
+  --destructive: var(--err);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--arc);
+  --chart-1: var(--arc);
+  --chart-2: var(--copper);
+  --chart-3: var(--ok);
+  --chart-4: var(--warn);
+  --chart-5: var(--mist);
+  --sidebar: var(--panel);
+  --sidebar-foreground: var(--paper);
+  --sidebar-primary: var(--arc);
+  --sidebar-primary-foreground: var(--ink);
+  --sidebar-accent: var(--steel);
+  --sidebar-accent-foreground: var(--paper);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--arc);
+
+  /* Glow allowed on dark only */
+  --glow: 0 0 0 1px var(--arc), 0 0 26px rgba(46, 210, 255, 0.28);
+  --glow-soft: 0 0 0 4px rgba(46, 210, 255, 0.18);
+  --glass-bg: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.18);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
     color-scheme: dark;
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+
+    --carbon: #1b2228;
+    --panel: #222b33;
+    --steel: #2d3841;
+    --silver: #ccd3da;
+    --mist: #98a5b1;
+    --line: #3a4753;
+    --ink: #12181d;
+    --paper: #f1f4f7;
+    --arc: #2ed2ff;
+    --arc-ink: #07739b;
+    --copper: #c48a5c;
+    --copper-ink: #8a5a36;
+    --ok: #3ddc97;
+    --warn: #e9a24f;
+    --err: #ff6b7a;
+
+    --background: var(--carbon);
+    --foreground: var(--paper);
+    --card: var(--panel);
+    --card-foreground: var(--paper);
+    --popover: var(--panel);
+    --popover-foreground: var(--paper);
+    --primary: var(--arc);
+    --primary-foreground: var(--ink);
+    --secondary: var(--steel);
+    --secondary-foreground: var(--paper);
+    --muted: var(--steel);
+    --muted-foreground: var(--mist);
+    --accent: var(--steel);
+    --accent-foreground: var(--paper);
+    --destructive: var(--err);
+    --border: var(--line);
+    --input: var(--line);
+    --ring: var(--arc);
+    --chart-1: var(--arc);
+    --chart-2: var(--copper);
+    --chart-3: var(--ok);
+    --chart-4: var(--warn);
+    --chart-5: var(--mist);
+    --sidebar: var(--panel);
+    --sidebar-foreground: var(--paper);
+    --sidebar-primary: var(--arc);
+    --sidebar-primary-foreground: var(--ink);
+    --sidebar-accent: var(--steel);
+    --sidebar-accent-foreground: var(--paper);
+    --sidebar-border: var(--line);
+    --sidebar-ring: var(--arc);
+
+    --glow: 0 0 0 1px var(--arc), 0 0 26px rgba(46, 210, 255, 0.28);
+    --glow-soft: 0 0 0 4px rgba(46, 210, 255, 0.18);
+    --glass-bg: rgba(255, 255, 255, 0.07);
+    --glass-border: rgba(255, 255, 255, 0.16);
+    --glass-highlight: rgba(255, 255, 255, 0.18);
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------- */
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  ::selection {
+    background: var(--arc);
+    color: #12181d;
+  }
+
+  /* Premium thin scrollbars */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--mist);
+    background-clip: content-box;
   }
 }
 
 /* ---------------------------------------------------------------------------
- * RTL (Right-to-Left) Language Support
+ * RTL (Right-to-Left) — Arabic experience
  * ---------------------------------------------------------------------------
- * Tailwind v4 uses CSS logical properties by default (start/end instead of
- * left/right), so most RTL mirroring is automatic. These are the remaining
- * manual overrides needed for a smooth Arabic experience.
- * --------------------------------------------------------------------------- */
+ * Tailwind v4 uses CSS logical properties by default (start/end), so most
+ * RTL mirroring is automatic. These are the remaining manual overrides.
+ * Arabic display font is Readex Pro (brand headline face).
+ * NEVER apply letter-spacing to Arabic text.
+ * ------------------------------------------------------------------------- */
 
 @layer utilities {
-  /* Font family switch for Arabic — Inter + system Arabic fallback */
   .dir-rtl {
-    --font-sans: 'Inter', 'Noto Naskh Arabic', 'Scheherazade New', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: var(--font-readex), var(--font-plex-arabic), ui-sans-serif, system-ui, sans-serif;
+    --font-display: var(--font-readex);
   }
 
   /* Numeric values stay LTR even in RTL context (phone numbers, stats) */
@@ -186,5 +351,132 @@
   /* Stepper arrows: flip ChevronRight → ChevronLeft visually */
   .dir-rtl .rtl-mirror-icon svg {
     transform: scaleX(-1);
+  }
+
+  /* NEVER letter-spacing on Arabic — neutralize eyebrow tracking in RTL */
+  .dir-rtl .archai-eyebrow {
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}
+
+/* Archai utilities — @utility registers them so variants (dark:, hover:…) work */
+
+@utility archai-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.125em;
+  text-transform: uppercase;
+  color: var(--arc);
+  direction: ltr;
+  display: inline-block;
+}
+
+@utility archai-glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@utility archai-chrome {
+  padding: 3px;
+  background: var(--chrome);
+}
+
+@utility archai-node-grid {
+  background-image: radial-gradient(var(--line) 1.4px, transparent 1.4px);
+  background-size: 20px 20px;
+}
+
+@utility archai-glow {
+  box-shadow: var(--glow);
+}
+
+@utility archai-glow-soft {
+  box-shadow: var(--glow-soft);
+}
+
+@utility archai-focus {
+  &:focus-visible {
+    outline: none;
+    border-color: var(--arc);
+    box-shadow: var(--glow-soft);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Motion (Archai 13/MOTION)
+ *   --fast 120ms hover/press · --base 240ms menus/cards · --slow 480ms reveal
+ *   Node Pulse: scale 1→1.4 · 1.2s loop · Chrome Sweep: 900ms once
+ *   prefers-reduced-motion: show final state directly.
+ * ------------------------------------------------------------------------- */
+
+@keyframes archai-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes archai-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes archai-node-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.35;
+  }
+}
+
+@keyframes archai-sweep {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+
+@layer utilities {
+  .animate-archai-fade-up {
+    animation: archai-fade-up var(--base) var(--ease) both;
+  }
+  .animate-archai-fade-in {
+    animation: archai-fade-in var(--base) var(--ease) both;
+  }
+  .animate-archai-pulse {
+    animation: archai-node-pulse 1.2s var(--ease) infinite;
+  }
+  .animate-archai-sweep {
+    animation: archai-sweep 900ms var(--ease) 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -49,24 +49,26 @@ export function DoctorSidebar({ activeView, onNavigate }: Props) {
   const activeKey = activeView
 
   return (
-    <aside className="flex h-screen w-[260px] flex-col border-r border-[#E5E7EB] bg-white dark:border-[#374151] dark:bg-[#1F2937]">
+    <aside className="flex h-screen w-[260px] shrink-0 flex-col border-e border-line bg-sidebar">
       {/* Logo mark */}
-      <div className="flex items-center gap-2.5 px-5 py-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0F766E]">
-          <Stethoscope className="h-[18px] w-[18px] text-white" strokeWidth={1.5} />
-        </div>
-        <div className="flex flex-col leading-tight">
-          <span className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">Meridian</span>
-          <span className="text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{t.sidebar.doctor.clinicSuite}</span>
+      <div className="border-b border-line p-4">
+        <div className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <Stethoscope className="size-[18px]" strokeWidth={1.75} />
+          </span>
+          <div className="min-w-0 flex-1 leading-tight">
+            <span className="block truncate text-sm font-semibold text-foreground">Meridian</span>
+            <span className="block truncate text-xs text-mist">{t.sidebar.doctor.clinicSuite}</span>
+          </div>
         </div>
       </div>
 
       {/* Nav groups */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2">
-        {NAV_GROUPS.map((group) => (
-          <div key={group.labelKey} className="mb-6">
-            <p className="px-2 pb-2 text-[11px] font-semibold tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">{group.label}</p>
-            <ul className="flex flex-col gap-1">
+      <nav className="flex-1 overflow-y-auto px-4 py-6">
+        {NAV_GROUPS.map((group, gi) => (
+          <div key={group.labelKey} className={gi > 0 ? "mt-7" : ""}>
+            <p className="archai-eyebrow px-2 !text-mist">{group.label}</p>
+            <ul className="mt-2.5 flex flex-col gap-1">
               {group.items.map((item) => {
                 const Icon = item.icon
                 const isActive = item.labelKey === activeKey
@@ -75,16 +77,19 @@ export function DoctorSidebar({ activeView, onNavigate }: Props) {
                     <button
                       type="button"
                       onClick={() => onNavigate(item.labelKey as DoctorView)}
-                      className={`relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                      className={
                         isActive
-                          ? "bg-[#F9FAFB] font-medium text-[#111827] dark:bg-[#374151] dark:text-[#F9FAFB]"
-                          : "font-normal text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:bg-[#374151] dark:hover:text-[#E5E7EB]"
-                      }`}
+                          ? "relative flex h-10 w-full items-center gap-3 rounded-lg bg-accent px-3 text-sm font-medium text-foreground"
+                          : "flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground"
+                      }
                     >
                       {isActive && (
-                        <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#0F766E]" />
+                        <span className="absolute start-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-arc" />
                       )}
-                      <Icon className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                      <Icon
+                        className={`size-[18px] ${isActive ? "text-arc" : ""}`}
+                        strokeWidth={1.75}
+                      />
                       {item.label}
                     </button>
                   </li>
@@ -96,9 +101,9 @@ export function DoctorSidebar({ activeView, onNavigate }: Props) {
       </nav>
 
       {/* Doctor user card */}
-      <div className="border-t border-[#E5E7EB] p-3 dark:border-[#374151]">
-        <div className="flex items-center gap-3 rounded-lg px-2 py-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F9FAFB] text-sm font-semibold text-[#111827] dark:bg-[#374151] dark:text-[#F9FAFB]">
+      <div className="border-t border-line p-4">
+        <div className="flex items-center gap-3 rounded-xl border border-line bg-steel/40 p-3 dark:bg-ink/40">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-steel text-xs font-semibold text-silver">
             {auth.session?.fullName
               ? auth.session.fullName
                   .replace(/^Dr\.\s*/i, "")
@@ -107,21 +112,21 @@ export function DoctorSidebar({ activeView, onNavigate }: Props) {
                   .join("")
                   .toUpperCase()
               : "SR"}
-          </div>
-          <div className="flex min-w-0 flex-col leading-tight">
-            <span className="truncate text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+          </span>
+          <div className="min-w-0 flex-1 leading-tight">
+            <span className="block truncate text-sm font-medium text-foreground">
               {auth.session?.fullName ?? "Dr. Sara Reyes"}
             </span>
-            <span className="truncate text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{t.sidebar.doctor.doctor}</span>
+            <span className="block truncate text-xs text-mist">{t.sidebar.doctor.doctor}</span>
           </div>
           <button
             type="button"
             onClick={() => auth.logout()}
-            className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-[#FEF2F2] hover:text-[#DC2626] dark:text-[#9CA3AF] dark:hover:bg-[#450A0A] dark:hover:text-[#FCA5A5]"
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg text-mist transition-colors duration-200 hover:bg-err/10 hover:text-err"
             aria-label={t.common.logOut}
             title={t.common.logOut}
           >
-            <LogOut className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            <LogOut className="size-[18px]" strokeWidth={1.75} />
           </button>
         </div>
       </div>

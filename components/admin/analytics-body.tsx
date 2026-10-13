@@ -49,7 +49,7 @@ export function AnalyticsBody({
   return (
     <div className="flex flex-col">
       {/* Underline-style tab row */}
-      <div className="shrink-0 border-b border-[#E5E7EB] bg-white px-6 dark:border-[#374151] dark:bg-[#1F2937]">
+      <div className="shrink-0 border-b border-line bg-card px-6">
         <div className="flex items-center gap-1">
           {TABS.map((tab) => {
             const active = tab.key === activeTab
@@ -58,15 +58,15 @@ export function AnalyticsBody({
                 key={tab.key}
                 type="button"
                 onClick={() => onTabChange(tab.key)}
-                className={`relative px-4 py-3 text-sm transition-colors ${
+                className={
                   active
-                    ? "font-medium text-[#111827] dark:text-[#F9FAFB]"
-                    : "font-normal text-[#6B7280] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
-                }`}
+                    ? "relative px-4 py-3 text-sm font-medium text-arc transition-colors duration-200"
+                    : "relative px-4 py-3 text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                }
               >
                 {tab.label}
                 {active && (
-                  <span className="absolute inset-x-4 bottom-0 h-[2px] rounded-full bg-[#0F766E]" />
+                  <span className="absolute inset-x-4 bottom-0 h-[2px] rounded-full bg-arc" />
                 )}
               </button>
             )
@@ -77,11 +77,12 @@ export function AnalyticsBody({
       {/* Loading / Error states */}
       {isLoading && (
         <div className="flex items-center justify-center py-16">
-          <p className="text-sm text-[#6B7280] dark:text-[#9CA3AF]">Loading…</p>
+          <p className="text-sm text-muted-foreground">Loading…</p>
         </div>
       )}
       {error && !isLoading && (
-        <div className="mx-6 mt-4 rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 text-xs text-[#DC2626] dark:border-[#7F1D1D] dark:bg-[#450A0A] dark:text-[#FCA5A5]">
+        <div className="mx-6 mt-4 flex items-center gap-2.5 rounded-lg bg-err/10 px-4 py-3 text-sm font-medium text-err">
+          <span className="size-2 shrink-0 rounded-full bg-err" />
           {error}
         </div>
       )}

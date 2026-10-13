@@ -12,6 +12,13 @@ interface SuperAdminAuditProps {
   tenants: IdentityTenant[]
 }
 
+// Archai semantic tones — insert=ok · update=arc · delete=err
+const ACTION_TONES: Record<AuditAction, string> = {
+  insert: "bg-ok/10 text-ok",
+  update: "bg-arc/10 text-arc",
+  delete: "bg-err/10 text-err",
+}
+
 export function SuperAdminAudit({ logs, tenants }: SuperAdminAuditProps) {
   const { t } = useT()
   const sa = t["super-admin"]
@@ -43,11 +50,13 @@ export function SuperAdminAudit({ logs, tenants }: SuperAdminAuditProps) {
     <div className="space-y-4">
       {/* Section header */}
       <div className="flex items-center gap-3">
-        <ScrollText className="h-5 w-5 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
-        <h2 className="text-lg font-semibold text-[#111827] dark:text-[#F9FAFB]">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-arc/10">
+          <ScrollText className="size-[18px] text-arc" strokeWidth={1.75} />
+        </span>
+        <h2 className="font-display text-xl font-semibold text-foreground">
           {sa.superAdminAuditTitle}
         </h2>
-        <span className="rounded-full bg-[#F3F4F6] px-2 py-0.5 text-xs font-medium text-[#6B7280] dark:bg-[#374151] dark:text-[#9CA3AF]">
+        <span className="rounded-full border border-line px-2 py-0.5 font-mono text-xs text-mist ltr-in-rtl">
           {filtered.length}
         </span>
       </div>
@@ -55,11 +64,11 @@ export function SuperAdminAudit({ logs, tenants }: SuperAdminAuditProps) {
       {/* Filters */}
       {logs.length > 0 && (
         <div className="flex items-center gap-3">
-          <Filter className="h-4 w-4 text-[#9CA3AF]" strokeWidth={1.5} />
+          <Filter className="size-4 text-mist" strokeWidth={1.75} />
           <select
             value={filterTable}
             onChange={(e) => setFilterTable(e.target.value)}
-            className="h-8 rounded-[6px] border border-[#E5E7EB] bg-white px-2 text-xs text-[#6B7280] dark:border-[#374151] dark:bg-[#111827] dark:text-[#9CA3AF]"
+            className="h-8 rounded-lg border border-line bg-card px-2 text-xs text-muted-foreground transition-all duration-200 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none dark:bg-ink"
           >
             <option value="">{t.common.allTables}</option>
             {filterOptions.tables.map((t) => (
@@ -69,7 +78,7 @@ export function SuperAdminAudit({ logs, tenants }: SuperAdminAuditProps) {
           <select
             value={filterAction}
             onChange={(e) => setFilterAction(e.target.value)}
-            className="h-8 rounded-[6px] border border-[#E5E7EB] bg-white px-2 text-xs text-[#6B7280] dark:border-[#374151] dark:bg-[#111827] dark:text-[#9CA3AF]"
+            className="h-8 rounded-lg border border-line bg-card px-2 text-xs text-muted-foreground transition-all duration-200 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none dark:bg-ink"
           >
             <option value="">{sa.filterByAction ?? "All Actions"}</option>
             {filterOptions.actions.map((a) => {
@@ -86,46 +95,46 @@ export function SuperAdminAudit({ logs, tenants }: SuperAdminAuditProps) {
       )}
 
       {/* Table */}
-      <div className="overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white dark:border-[#374151] dark:bg-[#1F2937]">
+      <div className="overflow-hidden rounded-2xl border border-line bg-card">
         {logs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <ScrollText className="h-10 w-10 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-            <p className="mt-3 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+            <ScrollText className="size-10 text-mist" strokeWidth={1.75} />
+            <p className="mt-3 text-sm font-medium text-muted-foreground">
               {sa.noAuditEntries}
             </p>
-            <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+            <p className="mt-1 text-xs text-mist">
               {sa.noAuditEntriesDesc}
             </p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+            <p className="text-sm font-medium text-muted-foreground">
               No matching entries
             </p>
-            <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+            <p className="mt-1 text-xs text-mist">
               Adjust the filters to see more results.
             </p>
           </div>
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#E5E7EB] bg-[#F9FAFB] dark:border-[#374151] dark:bg-[#111827]">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+              <tr className="border-b border-line bg-steel/40">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   {t.admin.auditFilterBar.searchId ?? "Record ID"}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   Action
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   Table
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   Summary
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   Timestamp
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-end text-xs font-semibold uppercase text-mist">
                   Changes
                 </th>
               </tr>
@@ -136,38 +145,34 @@ export function SuperAdminAudit({ logs, tenants }: SuperAdminAuditProps) {
                 return (
                   <tr
                     key={log.id}
-                    className="border-b border-[#E5E7EB] transition-colors hover:bg-[#F9FAFB] dark:border-[#374151] dark:hover:bg-[#111827]"
+                    className="border-b border-line transition-colors duration-200 last:border-b-0 hover:bg-accent"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                    <td className="px-4 py-3 font-mono text-xs text-mist ltr-in-rtl">
                       {log.target_row_id.slice(0, 12)}
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                        style={{
-                          color: actionMeta?.color ?? "#6B7280",
-                          backgroundColor: `${actionMeta?.color ?? "#6B7280"}15`,
-                        }}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[13px] font-semibold ${ACTION_TONES[log.action as AuditAction]}`}
                       >
                         {actionMeta?.label ?? log.action}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                    <td className="px-4 py-3 font-mono text-xs text-mist ltr-in-rtl">
                       {log.target_table}
                     </td>
-                    <td className="px-4 py-3 text-sm text-[#111827] dark:text-[#F9FAFB] max-w-[300px] truncate">
+                    <td className="max-w-[300px] truncate px-4 py-3 text-[15px] text-foreground">
                       {log.summary}
                     </td>
-                    <td className="px-4 py-3 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                    <td className="px-4 py-3 text-xs text-muted-foreground ltr-in-rtl">
                       {new Date(log.created_at).toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-end">
                       {log.changes && log.changes.length > 0 ? (
-                        <span className="text-xs text-[#2563EB] dark:text-[#60A5FA]">
+                        <span className="font-latin text-xs text-arc">
                           {log.changes.length} change{log.changes.length > 1 ? "s" : ""}
                         </span>
                       ) : (
-                        <span className="text-xs text-[#9CA3AF]">—</span>
+                        <span className="text-xs text-mist">—</span>
                       )}
                     </td>
                   </tr>

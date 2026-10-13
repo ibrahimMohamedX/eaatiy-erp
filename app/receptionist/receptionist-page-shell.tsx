@@ -36,13 +36,17 @@ export function ReceptionistPageShell({ initialData }: Props) {
         return (
           <>
             {/* Greeting hero */}
-            <section className="flex flex-col justify-center rounded-[12px] border border-[#E5E7EB] bg-white px-6 py-5 dark:border-[#374151] dark:bg-[#1F2937]">
-              <p className="text-lg font-semibold text-[#111827] dark:text-[#F9FAFB]">
-                {t.receptionist.greeting}
-              </p>
-              <p className="mt-1 text-sm text-[#6B7280] dark:text-[#9CA3AF]">
-                {t.receptionist.liveQueue}: {counts?.waiting ?? 0} {t.receptionist.waiting}, {counts?.inConsultation ?? 0} {t.receptionist.inConsultation}. {counts?.unpaidBills ?? 0} {t.receptionist.unpaidBills}.
-              </p>
+            <section className="relative flex flex-col justify-center overflow-hidden rounded-2xl border border-line bg-card px-6 py-5">
+              <div className="archai-node-grid pointer-events-none absolute inset-0 opacity-30" />
+              <div className="relative">
+                <p className="archai-eyebrow">RECEPTION / OVERVIEW</p>
+                <p className="mt-2 font-display text-xl font-bold text-foreground">
+                  {t.receptionist.greeting}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t.receptionist.liveQueue}: {counts?.waiting ?? 0} {t.receptionist.waiting}, {counts?.inConsultation ?? 0} {t.receptionist.inConsultation}. {counts?.unpaidBills ?? 0} {t.receptionist.unpaidBills}.
+                </p>
+              </div>
             </section>
             <KpiRow counts={counts ?? null} />
             <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[65%_35%]">
@@ -71,10 +75,10 @@ export function ReceptionistPageShell({ initialData }: Props) {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F9FAFB] dark:bg-[#111827]">
+    <div className="flex min-h-screen bg-background">
       <Sidebar activeView={activeView} onNavigate={setActiveView} />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col">
         <TopBar
           onNewAppointment={() => setShowAppointment(true)}
           onRegisterPatient={() => setShowRegistration(true)}
@@ -82,8 +86,10 @@ export function ReceptionistPageShell({ initialData }: Props) {
           notificationCount={alertQueue.length}
         />
 
-        <main className="flex-1 overflow-y-auto p-6">
-          {renderContent()}
+        <main className="relative flex-1 overflow-y-auto p-6">
+          {/* subtle node-grid depth */}
+          <div className="archai-node-grid pointer-events-none absolute inset-0 opacity-20" />
+          <div className="relative">{renderContent()}</div>
         </main>
       </div>
 

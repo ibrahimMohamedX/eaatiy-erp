@@ -10,7 +10,7 @@ type Props = {
 
 export function OverviewTab({ data }: Props) {
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex animate-archai-fade-in flex-col gap-6 p-6">
       {/* KPI metric cards */}
       <KpiGrid data={data} />
 

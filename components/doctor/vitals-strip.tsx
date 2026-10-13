@@ -3,13 +3,11 @@
 import { Activity, Thermometer, Weight, Droplets, Heart } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { Vitals } from "@/lib/types"
-import { statusBg, SEMANTIC_COLORS } from "@/lib/color-utils"
 import { useT } from "@/lib/i18n/use-t"
 
 /**
- * Vitals Summary Strip — 5 interactive semantic chips showing
- * the patient's triage vitals. Each chip uses the 12% opacity rule
- * for its background.
+ * Vitals Summary Strip — 5 interactive semantic tiles showing
+ * the patient's triage vitals. Abnormal values surface the err tone.
  */
 
 type ChipDef = {
@@ -82,46 +80,46 @@ export function VitalsStrip({ vitals }: { vitals?: Vitals }) {
 
   return (
     <div className="px-6 pb-3">
-      <div className="flex gap-3 overflow-x-auto rounded-[12px] border border-[#E5E7EB] bg-white p-4 dark:border-[#374151] dark:bg-[#1F2937]">
+      <div className="flex gap-3 overflow-x-auto">
         {chips.map((chip) => {
           const Icon = chip.icon
           const value = vitals?.[chip.key]
           const alert = value != null && isAbnormal(chip.key, value)
-          // Non-alert states use Tailwind classes (dark-aware); alert overrides
-          // are applied via inline style, which takes precedence.
+          // Neutral stat tiles — the err tone overrides every level
+          // when the value falls outside the normal range.
 
           return (
             <div
               key={chip.key}
-              className="flex min-w-[160px] flex-1 items-center gap-3 rounded-[8px] bg-[#F9FAFB] p-3 dark:bg-[#374151]"
-              style={alert ? { backgroundColor: statusBg(SEMANTIC_COLORS.red.hex) } : undefined}
+              className={`flex min-w-[160px] flex-1 items-center gap-3 rounded-2xl border p-4 transition-colors duration-200 ${
+                alert
+                  ? "border-err/40 bg-err/10"
+                  : "border-line bg-card"
+              }`}
             >
               {/* Icon */}
-              <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-                style={alert ? { backgroundColor: statusBg(SEMANTIC_COLORS.red.hex) } : { backgroundColor: "rgba(15,118,110,0.12)" }}
-              >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-steel">
                 <Icon
-                  className="h-[18px] w-[18px]"
-                  strokeWidth={1.5}
-                  style={alert ? { color: SEMANTIC_COLORS.red.hex } : { color: "#0F766E" }}
+                  className={`size-[18px] ${alert ? "text-err" : "text-silver"}`}
+                  strokeWidth={1.75}
                 />
               </span>
 
               {/* Value + label */}
               <div className="min-w-0">
                 <p
-                  className="text-lg font-semibold leading-none text-[#111827] dark:text-[#F9FAFB]"
-                  style={alert ? { color: SEMANTIC_COLORS.red.hex } : undefined}
+                  className={`font-latin text-lg font-semibold leading-none ltr-in-rtl ${
+                    alert ? "text-err" : "text-foreground"
+                  }`}
                 >
                   {value ?? "—"}
                 </p>
-                <p className="mt-1 text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">
+                <p className="mt-1 text-[11px] text-muted-foreground">
                   {chip.label}{" "}
-                  <span className="text-[#E5E7EB] dark:text-[#374151]">·</span>{" "}
+                  <span className="text-line">·</span>{" "}
                   {chip.unit}
                 </p>
-                <p className="mt-0.5 text-[10px] text-[#6B7280] dark:text-[#9CA3AF]">
+                <p className="mt-0.5 text-[10px] text-mist">
                   {t.doctor.normalRange.replace("{range}", chip.normalRange)}
                 </p>
               </div>
@@ -129,8 +127,7 @@ export function VitalsStrip({ vitals }: { vitals?: Vitals }) {
               {/* Abnormal dot */}
               {alert && (
                 <span
-                  className="ml-auto h-2 w-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: SEMANTIC_COLORS.red.hex }}
+                  className="ms-auto size-2 shrink-0 rounded-full bg-err"
                   title={t.doctor.outsideNormalRange}
                 />
               )}

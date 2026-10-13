@@ -22,9 +22,9 @@ export function BillingTab({ billing, appointment, onMutated }: Props) {
   if (!billing) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <DollarSign className="h-10 w-10 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-        <p className="mt-4 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">{t.doctor.noBillingRecord}</p>
-        <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.doctor.noBillingDesc}</p>
+        <DollarSign className="size-10 text-mist" strokeWidth={1.75} />
+        <p className="mt-4 text-sm font-medium text-foreground">{t.doctor.noBillingRecord}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t.doctor.noBillingDesc}</p>
       </div>
     )
   }
@@ -46,35 +46,31 @@ export function BillingTab({ billing, appointment, onMutated }: Props) {
 
   return (
     <div className="p-5">
-      <h3 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.doctor.consultationFee}</h3>
-      <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+      <h3 className="font-display text-base font-semibold text-foreground">{t.doctor.consultationFee}</h3>
+      <p className="mt-1 text-xs text-muted-foreground">
         {t.doctor.billingDescription
           .replace("{queue}", String(appointment.queue_number))
           .replace("{type}", appointment.type === "new" ? t.doctor.newPatientLabel : t.doctor.followUpLabel)}
       </p>
 
       {/* Amount card */}
-      <div className="mt-5 flex items-center justify-between rounded-[12px] border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
+      <div className="mt-5 flex items-center justify-between rounded-2xl border border-line bg-card p-5">
         <div className="flex items-center gap-4">
           <div
-            className="flex h-12 w-12 items-center justify-center rounded-full"
-            style={{
-              backgroundColor: isPaid
-                ? "rgba(5,150,105,0.12)"
-                : "rgba(217,119,6,0.12)",
-            }}
+            className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${
+              isPaid ? "bg-ok/10" : "bg-warn/10"
+            }`}
           >
             <DollarSign
-              className="h-6 w-6"
-              strokeWidth={1.5}
-              style={{ color: statusMeta.color }}
+              className={`size-6 ${isPaid ? "text-ok" : "text-warn"}`}
+              strokeWidth={1.75}
             />
           </div>
           <div>
-            <p className="text-2xl font-bold text-[#111827] dark:text-[#F9FAFB]">
+            <p className="font-latin text-3xl font-semibold text-foreground ltr-in-rtl">
               ${billing.total_amount.toFixed(2)}
             </p>
-            <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+            <p className="text-xs text-muted-foreground">
               {t.doctor.standardFee}
             </p>
           </div>
@@ -82,18 +78,14 @@ export function BillingTab({ billing, appointment, onMutated }: Props) {
 
         {/* Payment status pill */}
         <span
-          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium"
-          style={{
-            backgroundColor: isPaid
-              ? "rgba(5,150,105,0.12)"
-              : "rgba(217,119,6,0.12)",
-            color: statusMeta.color,
-          }}
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium ${
+            isPaid ? "bg-ok/10 text-ok" : "bg-warn/10 text-warn"
+          }`}
         >
           {isPaid ? (
-            <CheckCircle2 className="h-4 w-4" strokeWidth={1.5} />
+            <CheckCircle2 className="size-4" strokeWidth={1.75} />
           ) : (
-            <Clock className="h-4 w-4" strokeWidth={1.5} />
+            <Clock className="size-4" strokeWidth={1.75} />
           )}
           {resolveLabel(statusMeta.labelKey, t)}
         </span>
@@ -101,22 +93,23 @@ export function BillingTab({ billing, appointment, onMutated }: Props) {
 
       {/* Error banner */}
       {error && (
-        <div className="mt-3 rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 text-xs text-[#DC2626] dark:border-[#7F1D1D] dark:bg-[#450A0A] dark:text-[#FCA5A5]">
+        <div className="mt-3 flex items-center gap-2.5 rounded-lg bg-err/10 px-4 py-3 text-sm font-medium text-err">
+          <span className="size-2 shrink-0 rounded-full bg-err" />
           {error}
         </div>
       )}
 
       {/* Detail rows */}
       <div className="mt-5 space-y-3">
-        <div className="flex items-center justify-between rounded-[8px] border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 dark:border-[#374151] dark:bg-[#374151]">
-          <span className="text-sm text-[#6B7280] dark:text-[#9CA3AF]">{t.doctor.paymentMethod}</span>
-          <span className="flex items-center gap-1.5 text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+        <div className="flex items-center justify-between rounded-lg border border-line bg-steel/40 px-4 py-3 dark:bg-ink/40">
+          <span className="text-sm text-muted-foreground">{t.doctor.paymentMethod}</span>
+          <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
             {billing.payment_method === "card" ? (
-              <CreditCard className="h-4 w-4 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
+              <CreditCard className="size-4 text-mist" strokeWidth={1.75} />
             ) : billing.payment_method === "cash" ? (
-              <Banknote className="h-4 w-4 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
+              <Banknote className="size-4 text-mist" strokeWidth={1.75} />
             ) : (
-              <span className="text-[#6B7280] dark:text-[#9CA3AF]">—</span>
+              <span className="text-mist">—</span>
             )}
             {billing.payment_method
               ? billing.payment_method === "card"
@@ -127,17 +120,17 @@ export function BillingTab({ billing, appointment, onMutated }: Props) {
         </div>
 
         {billing.paid_at && (
-          <div className="flex items-center justify-between rounded-[8px] border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 dark:border-[#374151] dark:bg-[#374151]">
-            <span className="text-sm text-[#6B7280] dark:text-[#9CA3AF]">{t.doctor.paidAt}</span>
-            <span className="text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+          <div className="flex items-center justify-between rounded-lg border border-line bg-steel/40 px-4 py-3 dark:bg-ink/40">
+            <span className="text-sm text-muted-foreground">{t.doctor.paidAt}</span>
+            <span className="font-mono text-sm font-medium text-foreground ltr-in-rtl">
               {billing.paid_at.slice(0, 10)} · {billing.paid_at.slice(11, 16)}
             </span>
           </div>
         )}
 
-        <div className="flex items-center justify-between rounded-[8px] border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 dark:border-[#374151] dark:bg-[#374151]">
-          <span className="text-sm text-[#6B7280] dark:text-[#9CA3AF]">{t.doctor.billingId}</span>
-          <span className="font-mono text-xs text-[#6B7280] dark:text-[#9CA3AF]">{billing.id}</span>
+        <div className="flex items-center justify-between rounded-lg border border-line bg-steel/40 px-4 py-3 dark:bg-ink/40">
+          <span className="text-sm text-muted-foreground">{t.doctor.billingId}</span>
+          <span className="font-mono text-xs text-muted-foreground ltr-in-rtl">{billing.id}</span>
         </div>
       </div>
 
@@ -148,18 +141,18 @@ export function BillingTab({ billing, appointment, onMutated }: Props) {
             type="button"
             disabled={isPending}
             onClick={() => handleMarkPaid("cash")}
-            className="flex flex-1 items-center justify-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-copper px-4 py-2.5 text-sm font-semibold text-[#12181D] transition-all duration-200 hover:bg-copper/85 active:translate-y-px disabled:opacity-50"
           >
-            <Banknote className="h-4 w-4 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
+            <Banknote className="size-4" strokeWidth={1.75} />
             {t.doctor.markPaidCash}
           </button>
           <button
             type="button"
             disabled={isPending}
             onClick={() => handleMarkPaid("card")}
-            className="flex flex-1 items-center justify-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-copper px-4 py-2.5 text-sm font-semibold text-[#12181D] transition-all duration-200 hover:bg-copper/85 active:translate-y-px disabled:opacity-50"
           >
-            <CreditCard className="h-4 w-4 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
+            <CreditCard className="size-4" strokeWidth={1.75} />
             {t.doctor.markPaidCard}
           </button>
         </div>

@@ -159,7 +159,7 @@ export function AdminPageShell({ initialData, fetchError }: Props) {
   }
 
   return (
-    <div className="flex h-screen bg-[#F9FAFB] dark:bg-[#111827]">
+    <div className="flex h-screen bg-background">
       <AdminSidebar activeKey={activeTab} onNavigate={handleNavigate} />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <AdminTopBar activeRange={dateRange} onRangeChange={handleRangeChange} />

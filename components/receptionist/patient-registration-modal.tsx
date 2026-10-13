@@ -38,9 +38,9 @@ const initialForm: FormData = {
   emergency_phone: "",
 }
 
-const labelClass = "mb-1 block text-xs font-medium text-[#111827] dark:text-[#F9FAFB]"
+const labelClass = "mb-1 block text-xs font-medium text-silver"
 const inputClass =
-  "h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF]"
+  "h-10 w-full rounded-lg border border-line bg-card px-3 text-sm text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none dark:bg-ink"
 
 export function PatientRegistrationModal({ open, onClose, onRegistered }: Props) {
   const { t } = useT()
@@ -83,41 +83,41 @@ export function PatientRegistrationModal({ open, onClose, onRegistered }: Props)
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#6B7280]/20 pt-[10vh] px-4 dark:bg-[#111827]/60">
-      <div className="relative w-full max-w-xl rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_2px_8px_rgba(17,24,39,0.06)] dark:border-[#374151] dark:bg-[#1F2937] dark:shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/60 pt-[10vh] px-4 backdrop-blur-sm">
+      <div className="relative w-full max-w-xl animate-archai-fade-up rounded-2xl border border-line bg-card shadow-[0_8px_32px_-8px_rgba(0,0,0,0.28)]">
         {/* Modal header */}
-        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-6 py-4 dark:border-[#374151]">
+        <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F766E]/[0.08]">
-              <UserPlus className="h-[18px] w-[18px] text-[#0F766E]" strokeWidth={1.5} />
+            <div className="flex size-9 items-center justify-center rounded-xl bg-arc/10">
+              <UserPlus className="size-[18px] text-arc" strokeWidth={1.75} />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.receptionist.registerPatientTitle}</h2>
-              <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.receptionist.registerPatientDesc}</p>
+              <h2 className="text-sm font-semibold text-foreground">{t.receptionist.registerPatientTitle}</h2>
+              <p className="text-xs text-muted-foreground">{t.receptionist.registerPatientDesc}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#6B7280] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
+            className="flex size-8 items-center justify-center rounded-lg text-mist transition-colors duration-200 hover:bg-accent hover:text-foreground"
           >
-            <X className="h-5 w-5" strokeWidth={1.5} />
+            <X className="size-5" strokeWidth={1.75} />
           </button>
         </div>
 
         {submitted ? (
           <div className="flex flex-col items-center py-12 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#059669]/[0.12]">
-              <UserPlus className="h-6 w-6 text-[#059669]" strokeWidth={1.5} />
+            <div className="flex size-12 items-center justify-center rounded-xl bg-ok/10">
+              <UserPlus className="size-6 text-ok" strokeWidth={1.75} />
             </div>
-            <p className="mt-4 text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.receptionist.patientRegistered}</p>
-            <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+            <p className="mt-4 text-sm font-semibold text-foreground">{t.receptionist.patientRegistered}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
               {t.receptionist.patientRegisteredDesc.replace("{name}", form.full_name)}
             </p>
             <button
               type="button"
               onClick={handleClose}
-              className="mt-6 rounded-[8px] bg-[#0F766E] px-6 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              className="mt-6 rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-all duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:bg-primary/85 active:translate-y-px"
             >
               {t.common.done}
             </button>
@@ -143,7 +143,7 @@ export function PatientRegistrationModal({ open, onClose, onRegistered }: Props)
                 <label className={labelClass}>{t.receptionist.dateOfBirth} *</label>
                 <input
                   type="date"
-                  className={inputClass}
+                  className={`${inputClass} ltr-in-rtl`}
                   value={form.date_of_birth}
                   onChange={(e) => update("date_of_birth", e.target.value)}
                 />
@@ -169,7 +169,7 @@ export function PatientRegistrationModal({ open, onClose, onRegistered }: Props)
                 <label className={labelClass}>{t.receptionist.phone} *</label>
                 <input
                   type="tel"
-                  className={inputClass}
+                  className={`${inputClass} ltr-in-rtl`}
                   placeholder="+1 (555) 000-0000"
                   value={form.phone}
                   onChange={(e) => update("phone", e.target.value)}
@@ -181,7 +181,7 @@ export function PatientRegistrationModal({ open, onClose, onRegistered }: Props)
                 <label className={labelClass}>{t.receptionist.email}</label>
                 <input
                   type="email"
-                  className={inputClass}
+                  className={`${inputClass} ltr-in-rtl`}
                   placeholder="patient@email.com"
                   value={form.email}
                   onChange={(e) => update("email", e.target.value)}
@@ -192,7 +192,7 @@ export function PatientRegistrationModal({ open, onClose, onRegistered }: Props)
               <div>
                 <label className={labelClass}>{t.receptionist.bloodGroup}</label>
                 <select
-                  className={inputClass}
+                  className={`${inputClass} ltr-in-rtl`}
                   value={form.blood_group}
                   onChange={(e) => update("blood_group", e.target.value)}
                 >
@@ -233,8 +233,8 @@ export function PatientRegistrationModal({ open, onClose, onRegistered }: Props)
               </div>
 
               {/* Divider */}
-              <div className="col-span-2 mt-2 border-t border-[#E5E7EB] pt-3 dark:border-[#374151]">
-                <p className="text-xs font-semibold text-[#6B7280] dark:text-[#9CA3AF]">
+              <div className="col-span-2 mt-2 border-t border-line pt-3">
+                <p className="archai-eyebrow !text-mist">
                   {t.receptionist.emergencyContact}
                 </p>
               </div>
@@ -256,7 +256,7 @@ export function PatientRegistrationModal({ open, onClose, onRegistered }: Props)
                 <label className={labelClass}>{t.receptionist.emergencyPhone}</label>
                 <input
                   type="tel"
-                  className={inputClass}
+                  className={`${inputClass} ltr-in-rtl`}
                   placeholder="+1 (555) 000-0000"
                   value={form.emergency_phone}
                   onChange={(e) => update("emergency_phone", e.target.value)}
@@ -265,11 +265,11 @@ export function PatientRegistrationModal({ open, onClose, onRegistered }: Props)
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-3 border-t border-[#E5E7EB] px-6 py-4 dark:border-[#374151]">
+            <div className="flex justify-end gap-3 border-t border-line px-6 py-4">
               <button
                 type="button"
                 onClick={handleClose}
-                className="rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
+                className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-silver transition-colors duration-200 hover:border-mist hover:text-foreground"
               >
                 {t.common.cancel}
               </button>
@@ -277,7 +277,7 @@ export function PatientRegistrationModal({ open, onClose, onRegistered }: Props)
                 type="button"
                 onClick={handleSubmit}
                 disabled={!form.full_name || !form.date_of_birth || !form.phone || isPending}
-                className="rounded-[8px] bg-[#0F766E] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:bg-primary/85 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
               >
                 {isPending ? "…" : t.receptionist.registerNewPatient}
               </button>

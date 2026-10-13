@@ -1,14 +1,28 @@
+import { BusPaths } from "@/components/archai/bus-paths"
+
 export default function LoginLoading() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F9FAFB] dark:bg-[#111827]">
-      <div className="max-w-md rounded-[12px] border border-[#E5E7EB] bg-white p-8 dark:border-[#374151] dark:bg-[#1F2937]">
-        {/* Logo skeleton */}
-        <div className="mx-auto h-8 w-36 rounded-full bg-[#F3F4F6] dark:bg-[#374151]" />
-        <div className="mt-6 space-y-4">
-          <div className="h-10 rounded-[8px] bg-[#F3F4F6] dark:bg-[#374151]" />
-          <div className="h-10 rounded-[8px] bg-[#F3F4F6] dark:bg-[#374151]" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-10">
+      {/* MOTIF 01 — Bus paths (inert while loading) */}
+      <BusPaths active={false} className="opacity-90" />
+      {/* BACKGROUND 02 — subtle node grid */}
+      <div className="archai-node-grid pointer-events-none absolute inset-0 opacity-40" />
+
+      <div className="relative w-full max-w-sm animate-archai-fade-up">
+        {/* Brand lockup skeleton */}
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <div className="h-14 w-40 rounded-xl bg-steel animate-pulse" />
+          <div className="h-3 w-44 rounded-full bg-steel animate-pulse" />
+        </div>
+        {/* Glass card skeleton */}
+        <div className="archai-glass rounded-2xl p-6 md:p-7">
+          <div className="space-y-5">
+            <div className="h-12 rounded-lg bg-steel animate-pulse" />
+            <div className="h-12 rounded-lg bg-steel animate-pulse" />
+          </div>
+          <div className="mt-7 h-12 rounded-lg bg-steel animate-pulse" />
         </div>
       </div>
-    </div>
+    </main>
   )
 }

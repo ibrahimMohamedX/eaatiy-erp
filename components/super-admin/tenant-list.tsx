@@ -17,17 +17,25 @@ interface TenantListProps {
   onMutated: () => void
 }
 
+// Archai semantic tones — active=ok · suspended=warn · provisioning=arc · revoked=err
 const STATUS_COLORS: Record<TenantStatus, string> = {
-  active: "#059669",
-  suspended: "#D97706",
-  provisioning: "#6366F1",
-  revoked: "#DC2626",
+  active: "bg-ok/10 text-ok",
+  suspended: "bg-warn/10 text-warn",
+  provisioning: "bg-arc/10 text-arc",
+  revoked: "bg-err/10 text-err",
+}
+
+const STATUS_DOTS: Record<TenantStatus, string> = {
+  active: "bg-ok",
+  suspended: "bg-warn",
+  provisioning: "bg-arc",
+  revoked: "bg-err",
 }
 
 const TIER_COLORS: Record<string, string> = {
-  trial: "#6B7280",
-  basic: "#2563EB",
-  premium: "#7C3AED",
+  trial: "bg-steel text-silver",
+  basic: "bg-arc/10 text-arc",
+  premium: "bg-copper/10 text-copper",
 }
 
 const STATUS_ANIMATION: Record<TenantStatus, string> = {
@@ -68,13 +76,9 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
     const label = sa.statusValues[key] ?? status
     return (
       <span
-        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_ANIMATION[status] ?? ""}`}
-        style={{ color: STATUS_COLORS[status], backgroundColor: `${STATUS_COLORS[status]}15` }}
+        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[13px] font-semibold ${STATUS_COLORS[status]} ${STATUS_ANIMATION[status] ?? ""}`}
       >
-        <span
-          className="h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: STATUS_COLORS[status] }}
-        />
+        <span className={`size-2 rounded-full ${STATUS_DOTS[status]}`} />
         {label}
       </span>
     )
@@ -85,8 +89,7 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
     const label = sa.tierValues[key] ?? tier
     return (
       <span
-        className="inline-flex items-center rounded-[4px] px-2 py-0.5 text-xs font-medium"
-        style={{ color: TIER_COLORS[tier] ?? "#6B7280", backgroundColor: `${TIER_COLORS[tier] ?? "#6B7280"}15` }}
+        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${TIER_COLORS[tier] ?? "bg-steel text-silver"}`}
       >
         {label}
       </span>
@@ -97,50 +100,52 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
     <div className="space-y-4">
       {/* Section header */}
       <div className="flex items-center gap-3">
-        <Building2 className="h-5 w-5 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
-        <h2 className="text-lg font-semibold text-[#111827] dark:text-[#F9FAFB]">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-arc/10">
+          <Building2 className="size-[18px] text-arc" strokeWidth={1.75} />
+        </span>
+        <h2 className="font-display text-xl font-semibold text-foreground">
           {sa.tenantListTitle}
         </h2>
-        <span className="rounded-full bg-[#F3F4F6] px-2 py-0.5 text-xs font-medium text-[#6B7280] dark:bg-[#374151] dark:text-[#9CA3AF]">
+        <span className="rounded-full border border-line px-2 py-0.5 font-mono text-xs text-mist ltr-in-rtl">
           {tenants.length}
         </span>
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white dark:border-[#374151] dark:bg-[#1F2937]">
+      <div className="overflow-hidden rounded-2xl border border-line bg-card">
         {tenants.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Building2 className="h-10 w-10 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-            <p className="mt-3 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+            <Building2 className="size-10 text-mist" strokeWidth={1.75} />
+            <p className="mt-3 text-sm font-medium text-muted-foreground">
               {t.common.noResults}
             </p>
-            <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+            <p className="mt-1 text-xs text-mist">
               Provision your first tenant to get started.
             </p>
           </div>
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#E5E7EB] bg-[#F9FAFB] dark:border-[#374151] dark:bg-[#111827]">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+              <tr className="border-b border-line bg-steel/40">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   {sa.clinicName}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   {sa.slug}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   {sa.city}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   {sa.tier}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   {sa.status}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-start text-xs font-semibold uppercase text-mist">
                   {sa.created}
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                <th className="px-4 py-3 text-end text-xs font-semibold uppercase text-mist">
                   {sa.actions}
                 </th>
               </tr>
@@ -149,23 +154,23 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
               {tenants.map((tenant) => (
                 <tr
                   key={tenant.id}
-                  className="border-b border-[#E5E7EB] transition-colors hover:bg-[#F9FAFB] dark:border-[#374151] dark:hover:bg-[#111827]"
+                  className="border-b border-line transition-colors duration-200 last:border-b-0 hover:bg-accent"
                 >
-                  <td className="px-4 py-3 text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+                  <td className="px-4 py-3 text-[15px] font-medium text-foreground">
                     {tenant.name}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                  <td className="px-4 py-3 font-mono text-xs text-mist ltr-in-rtl">
                     {tenant.slug}
                   </td>
-                  <td className="px-4 py-3 text-sm text-[#6B7280] dark:text-[#9CA3AF]">
+                  <td className="px-4 py-3 text-[15px] text-muted-foreground">
                     {tenant.city}
                   </td>
                   <td className="px-4 py-3">{renderTierBadge(tenant.subscription_tier)}</td>
                   <td className="px-4 py-3">{renderStatusPill(tenant.status as TenantStatus)}</td>
-                  <td className="px-4 py-3 text-sm text-[#6B7280] dark:text-[#9CA3AF]">
+                  <td className="px-4 py-3 text-sm text-muted-foreground ltr-in-rtl">
                     {new Date(tenant.created_at).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <div className="flex items-center justify-end gap-1">
                       {tenant.status === "suspended" || tenant.status === "provisioning" ? (
                         <button
@@ -177,10 +182,10 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
                             })
                           }
                           disabled={loadingTenant === tenant.id}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-[6px] text-[#059669] transition-colors hover:bg-[#05966915] disabled:opacity-50"
+                          className="inline-flex size-7 items-center justify-center rounded-lg text-ok transition-colors duration-200 hover:bg-ok/10 disabled:opacity-50"
                           title={sa.activate}
                         >
-                          <CheckCircle className="h-3.5 w-3.5" />
+                          <CheckCircle className="size-3.5" strokeWidth={1.75} />
                         </button>
                       ) : null}
                       {tenant.status === "active" ? (
@@ -193,10 +198,10 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
                             })
                           }
                           disabled={loadingTenant === tenant.id}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-[6px] text-[#D97706] transition-colors hover:bg-[#D97706]/10 disabled:opacity-50"
+                          className="inline-flex size-7 items-center justify-center rounded-lg text-warn transition-colors duration-200 hover:bg-warn/10 disabled:opacity-50"
                           title={sa.suspend}
                         >
-                          <PauseCircle className="h-3.5 w-3.5" />
+                          <PauseCircle className="size-3.5" strokeWidth={1.75} />
                         </button>
                       ) : null}
                       {tenant.status !== "revoked" ? (
@@ -209,10 +214,10 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
                             })
                           }
                           disabled={loadingTenant === tenant.id}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-[6px] text-[#DC2626] transition-colors hover:bg-[#DC2626]/10 disabled:opacity-50"
+                          className="inline-flex size-7 items-center justify-center rounded-lg text-err transition-colors duration-200 hover:bg-err/10 disabled:opacity-50"
                           title={sa.revoke}
                         >
-                          <XCircle className="h-3.5 w-3.5" />
+                          <XCircle className="size-3.5" strokeWidth={1.75} />
                         </button>
                       ) : null}
                     </div>
@@ -267,24 +272,28 @@ function ConfirmationDialog({
     },
   }
 
+  // Archai tone per action — activate=ok · suspend=warn · revoke=err
+  const confirmTones: Record<typeof action, string> = {
+    activate: "border-ok/40 text-ok hover:bg-ok/10",
+    suspend: "border-warn/40 text-warn hover:bg-warn/10",
+    revoke: "border-err/40 text-err hover:bg-err/10",
+  }
+
   const msg = messages[action]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-sm rounded-[12px] border border-[#E5E7EB] bg-white p-6 shadow-lg dark:border-[#374151] dark:bg-[#1F2937]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 backdrop-blur-sm">
+      <div className="w-full max-w-sm animate-archai-fade-up rounded-2xl border border-line bg-card p-6 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.28)]">
         <div className="flex items-start gap-3">
           <AlertTriangle
-            className="mt-0.5 h-5 w-5 shrink-0"
-            style={{
-              color: action === "revoke" ? "#DC2626" : "#D97706",
-            }}
-            strokeWidth={1.5}
+            className={`mt-0.5 size-5 shrink-0 ${action === "revoke" ? "text-err" : "text-warn"}`}
+            strokeWidth={1.75}
           />
           <div>
-            <p className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">
+            <p className="font-display text-lg font-semibold text-foreground">
               {msg.title}
             </p>
-            <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+            <p className="mt-1 text-xs text-muted-foreground">
               {tenantName}
               {msg.desc ? `. ${msg.desc}` : ""}
             </p>
@@ -293,21 +302,13 @@ function ConfirmationDialog({
         <div className="mt-4 flex justify-end gap-2">
           <button
             onClick={onCancel}
-            className="inline-flex h-8 items-center rounded-[6px] border border-[#E5E7EB] px-4 text-sm font-medium text-[#6B7280] transition-colors hover:bg-[#F3F4F6] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:bg-[#374151]"
+            className="inline-flex h-9 items-center rounded-lg border border-line px-4 text-sm font-medium text-silver transition-colors duration-200 hover:border-mist hover:text-foreground"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="inline-flex h-8 items-center rounded-[6px] px-4 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{
-              backgroundColor:
-                action === "revoke"
-                  ? "#DC2626"
-                  : action === "suspend"
-                    ? "#D97706"
-                    : "#059669",
-            }}
+            className={`inline-flex h-9 items-center rounded-lg border px-4 text-sm font-semibold transition-colors duration-200 ${confirmTones[action]}`}
           >
             Confirm
           </button>
@@ -316,4 +317,3 @@ function ConfirmationDialog({
     </div>
   )
 }
-

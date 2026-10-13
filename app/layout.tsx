@@ -1,10 +1,44 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Readex_Pro, IBM_Plex_Sans_Arabic, Sora, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+// ============================================================================
+// Archai Design System — brand type stack (all Google Fonts, per brand book)
+//   Readex Pro           → Arabic headlines (600/700)
+//   IBM Plex Sans Arabic → body + UI (400/500/600)
+//   Sora                 → Latin display + numerals (400-700)
+//   JetBrains Mono       → code, specs, labels (400/500)
+// ============================================================================
+
+const readexPro = Readex_Pro({
+  subsets: ['arabic', 'latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-readex',
+  display: 'swap',
+})
+
+const plexSansArabic = IBM_Plex_Sans_Arabic({
+  subsets: ['arabic', 'latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-plex-arabic',
+  display: 'swap',
+})
+
+const sora = Sora({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sora',
+  display: 'swap',
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-jetbrains',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: {
@@ -12,7 +46,6 @@ export const metadata: Metadata = {
     default: 'Clinic Management — Private Practice Suite',
   },
   description: 'Premium clinic management platform for independent private medical practices',
-  generator: 'v0.app',
   icons: {
     icon: [
       {
@@ -35,8 +68,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
+    { media: '(prefers-color-scheme: light)', color: '#F1F4F7' },
+    { media: '(prefers-color-scheme: dark)', color: '#1B2228' },
   ],
 }
 
@@ -46,7 +79,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} bg-[#F9FAFB]`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${readexPro.variable} ${plexSansArabic.variable} ${sora.variable} ${jetbrainsMono.variable}`}
+    >
       <head>
         {/* Inline script to apply dark/light class BEFORE first paint — avoids flash of wrong theme.
             Placed in <head> as a raw HTML injection so it executes before React hydrates.

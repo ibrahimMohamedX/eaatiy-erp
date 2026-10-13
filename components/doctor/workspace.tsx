@@ -37,12 +37,12 @@ export function Workspace({ patientData, doctors, onMutated }: Props) {
 
   if (!patientData) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-[#F9FAFB] dark:bg-[#111827]">
+      <div className="flex h-full w-full items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-sm font-semibold text-[#6B7280] dark:text-[#9CA3AF]">
+          <p className="text-sm font-medium text-foreground">
             {t.doctor.noActivePatient}
           </p>
-          <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+          <p className="mt-1 text-xs text-muted-foreground">
             {t.doctor.noActivePatientDesc}
           </p>
         </div>
@@ -92,10 +92,10 @@ export function Workspace({ patientData, doctors, onMutated }: Props) {
 
       {/* Tabbed content region */}
       <div className="flex flex-1 flex-col px-6 pb-6">
-        <div className="flex flex-1 flex-col rounded-[12px] border border-[#E5E7EB] bg-white dark:border-[#374151] dark:bg-[#1F2937]">
-          {/* Tab bar */}
-          <div className="shrink-0 border-b border-[#E5E7EB] px-3 dark:border-[#374151]">
-            <div className="flex items-center gap-1">
+        <div className="flex flex-1 flex-col rounded-2xl border border-line bg-card">
+          {/* Tab bar — segmented control */}
+          <div className="shrink-0 px-5 pt-5">
+            <div className="flex items-center gap-1 rounded-full border border-line bg-steel/40 p-1">
               {TABS.map((tab) => {
                 const active = tab.key === activeTab
                 return (
@@ -103,16 +103,13 @@ export function Workspace({ patientData, doctors, onMutated }: Props) {
                     key={tab.key}
                     type="button"
                     onClick={() => setActiveTab(tab.key)}
-                    className={`relative px-4 py-3 text-sm transition-colors ${
+                    className={
                       active
-                        ? "font-medium text-[#111827] dark:text-[#F9FAFB]"
-                        : "font-normal text-[#6B7280] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
-                    }`}
+                        ? "flex-1 rounded-full bg-card px-4 py-2 text-sm font-medium text-arc shadow-sm"
+                        : "flex-1 rounded-full px-4 py-2 text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                    }
                   >
                     {tab.label}
-                    {active && (
-                      <span className="absolute inset-x-4 bottom-0 h-[2px] rounded-full bg-[#0F766E]" />
-                    )}
                   </button>
                 )
               })}

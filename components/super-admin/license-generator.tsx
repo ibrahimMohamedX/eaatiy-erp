@@ -98,17 +98,19 @@ export function LicenseGenerator({ tenants, onMutated }: LicenseGeneratorProps) 
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Key className="h-5 w-5 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
-          <h2 className="text-lg font-semibold text-[#111827] dark:text-[#F9FAFB]">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-arc/10">
+            <Key className="size-[18px] text-arc" strokeWidth={1.75} />
+          </span>
+          <h2 className="font-display text-xl font-semibold text-foreground">
             {sa.licensingManagement}
           </h2>
         </div>
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Key className="h-10 w-10 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-          <p className="mt-3 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-line bg-card py-16 text-center">
+          <Key className="size-10 text-mist" strokeWidth={1.75} />
+          <p className="mt-3 text-sm font-medium text-muted-foreground">
             {t.common.noResults}
           </p>
-          <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+          <p className="mt-1 text-xs text-mist">
             No active tenants available for license management.
           </p>
         </div>
@@ -120,16 +122,18 @@ export function LicenseGenerator({ tenants, onMutated }: LicenseGeneratorProps) 
     <div className="space-y-6">
       {/* Section header */}
       <div className="flex items-center gap-3">
-        <Key className="h-5 w-5 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
-        <h2 className="text-lg font-semibold text-[#111827] dark:text-[#F9FAFB]">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-arc/10">
+          <Key className="size-[18px] text-arc" strokeWidth={1.75} />
+        </span>
+        <h2 className="font-display text-xl font-semibold text-foreground">
           {sa.licensingManagement}
         </h2>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
           {/* Left panel: tenant selector + actions */}
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+          <div className="rounded-2xl border border-line bg-card p-5">
+            <label className="text-xs font-semibold uppercase text-mist">
               {sa.selectTenantForLicense}
             </label>
             <select
@@ -140,7 +144,7 @@ export function LicenseGenerator({ tenants, onMutated }: LicenseGeneratorProps) 
                 setClaims(null)
                 setMessage(null)
               }}
-              className="mt-2 w-full h-9 rounded-[6px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] dark:border-[#374151] dark:bg-[#111827] dark:text-[#F9FAFB]"
+              className="mt-2 h-9 w-full rounded-lg border border-line bg-card px-3 text-sm text-foreground transition-all duration-200 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none dark:bg-ink"
             >
               <option value="">— Select a tenant —</option>
               {activeTenants.map((t) => (
@@ -152,7 +156,7 @@ export function LicenseGenerator({ tenants, onMutated }: LicenseGeneratorProps) 
 
             {/* Tenant details */}
             {selectedTenant && (
-              <div className="mt-4 space-y-2 rounded-[8px] bg-[#F9FAFB] p-3 dark:bg-[#111827]">
+              <div className="mt-4 space-y-2 rounded-lg border border-line bg-steel/40 p-3">
                 <DetailRow label={sa.tier} value={selectedTenant.subscription_tier} />
                 <DetailRow label={sa.status} value={selectedTenant.status} />
               </div>
@@ -163,24 +167,24 @@ export function LicenseGenerator({ tenants, onMutated }: LicenseGeneratorProps) 
               <button
                 onClick={handleGenerate}
                 disabled={!selectedTenantId || loading}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-[8px] bg-[#0F766E] px-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/85 active:translate-y-px disabled:opacity-50"
               >
                 {loading ? (
-                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <svg className="size-4 animate-spin" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 ) : (
-                  <Key className="h-4 w-4" />
+                  <Key className="size-4" strokeWidth={1.75} />
                 )}
                 {sa.generateLicense}
               </button>
               <button
                 onClick={handleRevoke}
                 disabled={!selectedTenantId || loading}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-[8px] border border-[#DC2626] px-4 text-sm font-medium text-[#DC2626] transition-colors hover:bg-[#DC2626]/10 disabled:opacity-50"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-err/40 px-4 text-sm font-medium text-err transition-colors duration-200 hover:bg-err/10 disabled:opacity-50"
               >
-                <ShieldOff className="h-4 w-4" />
+                <ShieldOff className="size-4" strokeWidth={1.75} />
                 {sa.revokeLicense}
               </button>
             </div>
@@ -188,56 +192,58 @@ export function LicenseGenerator({ tenants, onMutated }: LicenseGeneratorProps) 
             {/* Message */}
             {message && (
               <div
-                className={`mt-4 rounded-[8px] px-3 py-2 text-xs ${
-                  message.ok
-                    ? "bg-[#05966915] text-[#059669]"
-                    : "bg-[#DC2626]/10 text-[#DC2626]"
+                className={`mt-4 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-xs font-medium ${
+                  message.ok ? "bg-ok/10 text-ok" : "bg-err/10 text-err"
                 }`}
+                role="status"
               >
+                <span
+                  className={`size-2 shrink-0 rounded-full ${message.ok ? "bg-ok" : "bg-err"}`}
+                />
                 {message.text}
               </div>
             )}
           </div>
 
           {/* Right panel: license token + claims */}
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-5 dark:border-[#374151] dark:bg-[#1F2937]">
+          <div className="rounded-2xl border border-line bg-card p-5">
             {licenseToken ? (
               <div className="space-y-4">
                 {/* Copy button */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                  <span className="text-xs font-semibold uppercase text-mist">
                     {sa.licenseToken}
                   </span>
                   <button
                     onClick={handleCopy}
-                    className="inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-[#E5E7EB] px-3 text-xs font-medium text-[#6B7280] transition-colors hover:bg-[#F3F4F6] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:bg-[#374151]"
+                    className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-line px-3 text-xs font-medium text-silver transition-colors duration-200 hover:border-mist hover:text-foreground"
                   >
                     {copied ? (
                       <>
-                        <Check className="h-3 w-3 text-[#059669]" />
+                        <Check className="size-3 text-ok" strokeWidth={1.75} />
                         Copied
                       </>
                     ) : (
                       <>
-                        <Copy className="h-3 w-3" />
+                        <Copy className="size-3" strokeWidth={1.75} />
                         Copy
                       </>
                     )}
                   </button>
                 </div>
 
-                {/* Token (truncated) */}
-                <div className="rounded-[8px] bg-[#F9FAFB] p-3 font-mono text-xs text-[#6B7280] break-all dark:bg-[#111827] dark:text-[#9CA3AF] max-h-32 overflow-y-auto">
+                {/* Token — mono spec block */}
+                <div className="max-h-32 overflow-y-auto rounded-lg border border-line bg-ink p-3 font-mono text-xs text-silver break-all">
                   {licenseToken}
                 </div>
 
                 {/* Claims */}
                 {claims && (
                   <div>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#9CA3AF]">
+                    <span className="text-xs font-semibold uppercase text-mist">
                       Claims
                     </span>
-                    <div className="mt-2 rounded-[8px] bg-[#F9FAFB] p-3 space-y-1 text-xs dark:bg-[#111827]">
+                    <div className="mt-2 space-y-1 rounded-lg border border-line bg-ink p-3 text-xs">
                       <ClaimRow label="Subject (tenant)" value={claims.sub} />
                       <ClaimRow label="Issued" value={new Date(claims.iat * 1000).toLocaleString()} />
                       <ClaimRow label="Expires" value={new Date(claims.exp * 1000).toLocaleString()} />
@@ -253,21 +259,21 @@ export function LicenseGenerator({ tenants, onMutated }: LicenseGeneratorProps) 
               </div>
             ) : selectedTenant ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Key className="h-10 w-10 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-                <p className="mt-3 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+                <Key className="size-10 text-mist" strokeWidth={1.75} />
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
                   No license generated
                 </p>
-                <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                <p className="mt-1 text-xs text-mist">
                   Click "Generate License" to issue a new token for this tenant.
                 </p>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Key className="h-10 w-10 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-                <p className="mt-3 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+                <Key className="size-10 text-mist" strokeWidth={1.75} />
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
                   {sa.selectTenantForLicense}
                 </p>
-                <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                <p className="mt-1 text-xs text-mist">
                   Select an active tenant to manage its license.
                 </p>
               </div>
@@ -285,17 +291,17 @@ export function LicenseGenerator({ tenants, onMutated }: LicenseGeneratorProps) 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between text-xs">
-      <span className="text-[#6B7280] dark:text-[#9CA3AF]">{label}</span>
-      <span className="font-medium text-[#111827] dark:text-[#F9FAFB]">{value}</span>
+      <span className="text-mist">{label}</span>
+      <span className="font-medium text-foreground ltr-in-rtl">{value}</span>
     </div>
   )
 }
 
 function ClaimRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-[#6B7280] dark:text-[#9CA3AF]">{label}</span>
-      <span className="font-mono font-medium text-[#111827] dark:text-[#F9FAFB] max-w-[240px] truncate text-right">
+    <div className="flex items-center justify-between gap-3">
+      <span className="shrink-0 text-mist">{label}</span>
+      <span className="max-w-[240px] truncate text-end font-mono font-medium text-silver ltr-in-rtl">
         {value}
       </span>
     </div>

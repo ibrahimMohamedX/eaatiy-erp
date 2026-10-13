@@ -74,20 +74,13 @@ export function TopBar({
     return () => document.removeEventListener("mousedown", handler)
   }, [])
 
-  const initials = (name: string) =>
-    name
-      .split(" ")
-      .map((p) => p[0])
-      .join("")
-      .toUpperCase()
-
   return (
-    <header className="flex h-16 items-center justify-between gap-4 border-b border-[#E5E7EB] bg-white px-6 dark:border-[#374151] dark:bg-[#1F2937]">
+    <header className="flex h-16 items-center justify-between gap-4 border-b border-line bg-card/60 px-6 backdrop-blur-sm">
       {/* Global patient search */}
       <div ref={ref} className="relative w-full max-w-md">
         <Search
-          className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#6B7280] dark:text-[#9CA3AF]"
-          strokeWidth={1.5}
+          className="pointer-events-none absolute start-3 top-1/2 size-[18px] -translate-y-1/2 text-mist"
+          strokeWidth={1.75}
         />
         <input
           type="text"
@@ -96,23 +89,23 @@ export function TopBar({
           onFocus={() => setFocused(true)}
           placeholder={t.common.search}
           aria-label={t.common.search}
-          className="h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white pl-10 pr-8 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF]"
+          className="h-10 w-full rounded-lg border border-line bg-background ps-10 pe-8 text-sm text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none"
         />
         {query && (
           <button
             type="button"
             onClick={() => setQuery("")}
-            className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-[#6B7280] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
+            className="absolute end-2 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-mist transition-colors hover:text-foreground"
           >
-            <X className="h-4 w-4" strokeWidth={1.5} />
+            <X className="size-4" strokeWidth={1.75} />
           </button>
         )}
 
         {/* Results dropdown */}
         {showDropdown && (
-          <div className="absolute left-0 top-full z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-[#E5E7EB] bg-white shadow-[0_2px_8px_rgba(17,24,39,0.06)] dark:border-[#374151] dark:bg-[#1F2937] dark:shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
+          <div className="absolute start-0 top-full z-30 mt-1.5 w-full animate-archai-fade-in overflow-hidden rounded-lg border border-line bg-popover shadow-[0_8px_32px_-8px_rgba(0,0,0,0.28)]">
             {results.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-[#6B7280] dark:text-[#9CA3AF]">{t.common.noResults}</div>
+              <div className="px-4 py-3 text-sm text-muted-foreground">{t.common.noResults}</div>
             ) : (
               results.map((patient) => (
                 <SearchResult key={patient.id} patient={patient} query={query} />
@@ -125,9 +118,12 @@ export function TopBar({
       {/* Right cluster */}
       <div className="flex shrink-0 items-center gap-4">
         {/* Live status dot + date/time */}
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#059669]" aria-hidden />
-          <span className="text-sm text-[#6B7280] dark:text-[#9CA3AF]">
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="relative flex size-2" aria-hidden>
+            <span className="absolute inset-0 animate-archai-pulse rounded-full bg-ok/40" />
+            <span className="relative size-2 rounded-full bg-ok" />
+          </span>
+          <span className="font-mono text-xs text-mist">
             {new Date().toLocaleDateString("en-US", {
               weekday: "short",
               month: "short",
@@ -146,43 +142,41 @@ export function TopBar({
           <button
             type="button"
             onClick={() => setShowNotifications((p) => !p)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-[8px] border border-[#E5E7EB] text-[#6B7280] transition-colors hover:text-[#111827] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
+            className="relative flex size-9 items-center justify-center rounded-lg border border-line text-mist transition-colors duration-200 hover:border-mist hover:text-foreground"
             aria-label={t.common.notifications}
           >
-            <Bell className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            <Bell className="size-[18px]" strokeWidth={1.75} />
             {(notificationCount ?? 0) > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#DC2626] px-1 text-[10px] font-bold text-white">
+              <span className="absolute -end-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-err px-1 font-mono text-[10px] font-bold text-[#12181D]">
                 {notificationCount}
               </span>
             )}
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-full z-30 mt-2 w-72 rounded-[12px] border border-[#E5E7EB] bg-white shadow-lg dark:border-[#374151] dark:bg-[#1F2937]">
-              <div className="border-b border-[#E5E7EB] px-4 py-2.5 dark:border-[#374151]">
-                <p className="text-xs font-semibold text-[#111827] dark:text-[#F9FAFB]">
-                  {t.common.notifications}
-                </p>
+            <div className="absolute end-0 top-full z-30 mt-2 w-72 animate-archai-fade-up overflow-hidden rounded-xl border border-line bg-popover shadow-[0_8px_32px_-8px_rgba(0,0,0,0.28)]">
+              <div className="border-b border-line px-4 py-2.5">
+                <p className="archai-eyebrow !text-mist">{t.common.notifications}</p>
               </div>
               <div className="max-h-64 overflow-y-auto">
                 {!recentCalls || recentCalls.length === 0 ? (
-                  <p className="px-4 py-6 text-center text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                  <p className="px-4 py-6 text-center text-xs text-mist">
                     No recent notifications
                   </p>
                 ) : (
                   recentCalls.map(({ appointment, patient }) => (
                     <div
                       key={appointment.id}
-                      className="flex items-center gap-3 border-b border-[#E5E7EB] px-4 py-3 text-left last:border-b-0 dark:border-[#374151]"
+                      className="flex items-center gap-3 border-b border-line px-4 py-3 text-start last:border-b-0"
                     >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#0F766E] text-xs font-bold text-[#0F766E]">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-arc/60 font-mono text-xs font-bold text-arc">
                         {appointment.queue_number}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+                        <p className="text-sm font-medium text-foreground">
                           {patient?.full_name ?? appointment.patient_id}
                         </p>
-                        <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                        <p className="font-mono text-xs text-mist">
                           Called · {formatTime(appointment.last_called_at)}
                         </p>
                       </div>
@@ -194,21 +188,21 @@ export function TopBar({
           )}
         </div>
 
-        {/* Secondary + primary buttons */}
+        {/* Secondary + the single Arc action of this screen */}
         <button
           type="button"
           onClick={onNewAppointment}
-          className="flex h-9 items-center gap-2 rounded-[8px] border border-[#E5E7EB] px-3 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] dark:border-[#374151] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
+          className="flex h-9 items-center gap-2 rounded-lg border border-line px-3.5 text-sm font-medium text-silver transition-colors duration-200 hover:border-mist hover:text-foreground"
         >
-          <CalendarPlus className="h-[18px] w-[18px] text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
+          <CalendarPlus className="size-[18px] text-mist" strokeWidth={1.75} />
           {t.receptionist.newAppointment}
         </button>
         <button
           type="button"
           onClick={onRegisterPatient}
-          className="flex h-9 items-center gap-2 rounded-[8px] bg-[#0F766E] px-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className="flex h-9 items-center gap-2 rounded-lg bg-primary px-3.5 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/85 active:translate-y-px"
         >
-          <UserPlus className="h-[18px] w-[18px]" strokeWidth={1.5} />
+          <UserPlus className="size-[18px]" strokeWidth={1.75} />
           {t.receptionist.registerNewPatient}
         </button>
       </div>
@@ -226,9 +220,9 @@ function SearchResult({ patient, query }: { patient: Patient; query: string }) {
   return (
     <button
       type="button"
-      className="flex w-full items-center gap-3 border-b border-[#E5E7EB] px-3 py-2.5 text-left last:border-b-0 transition-colors hover:bg-[#F9FAFB] dark:border-[#374151] dark:hover:bg-[#374151]"
+      className="flex w-full items-center gap-3 border-b border-line px-3 py-2.5 text-start transition-colors duration-200 last:border-b-0 hover:bg-accent"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] text-[11px] font-semibold text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-steel text-[11px] font-semibold text-silver">
         {name
           .split(" ")
           .map((p) => p[0])
@@ -236,11 +230,11 @@ function SearchResult({ patient, query }: { patient: Patient; query: string }) {
           .toUpperCase()}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm text-[#111827] dark:text-[#F9FAFB]">
+        <p className="truncate text-sm text-foreground">
           {idx >= 0 ? (
             <>
               {name.slice(0, idx)}
-              <span className="font-semibold text-[#0F766E]">
+              <span className="font-semibold text-arc">
                 {name.slice(idx, idx + query.length)}
               </span>
               {name.slice(idx + query.length)}
@@ -249,11 +243,11 @@ function SearchResult({ patient, query }: { patient: Patient; query: string }) {
             name
           )}
         </p>
-        <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+        <p className="font-mono text-xs text-mist ltr-in-rtl">
           {patient.phone} · {age} yrs · {patient.gender}
         </p>
       </div>
-      <span className="shrink-0 rounded-full border border-[#E5E7EB] px-2 py-0.5 text-[10px] text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
+      <span className="shrink-0 rounded-full border border-line px-2 py-0.5 font-mono text-[10px] text-mist">
         {patient.blood_group ?? "—"}
       </span>
     </button>

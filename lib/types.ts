@@ -198,26 +198,26 @@ export interface StatusMeta {
   color: string // hex color for text + dot
 }
 
-/** Mapping from AppointmentStatus to display metadata */
+/** Mapping from AppointmentStatus to display metadata (Archai semantic palette) */
 export const APPOINTMENT_STATUS_META: Record<AppointmentStatus, StatusMeta> = {
-  waiting: { labelKey: "status.waiting", label: "Waiting", color: "#D97706" },
-  called: { labelKey: "status.called", label: "Called", color: "#9333EA" },
-  in_consultation: { labelKey: "status.inConsultation", label: "In Consultation", color: "#2563EB" },
-  completed: { labelKey: "status.completed", label: "Completed", color: "#059669" },
-  cancelled: { labelKey: "status.cancelled", label: "Cancelled", color: "#DC2626" },
+  waiting: { labelKey: "status.waiting", label: "Waiting", color: "#E9A24F" },
+  called: { labelKey: "status.called", label: "Called", color: "#2ED2FF" },
+  in_consultation: { labelKey: "status.inConsultation", label: "In Consultation", color: "#1BB0E3" },
+  completed: { labelKey: "status.completed", label: "Completed", color: "#3DDC97" },
+  cancelled: { labelKey: "status.cancelled", label: "Cancelled", color: "#FF6B7A" },
 }
 
-/** Mapping from AuditAction to display metadata */
+/** Mapping from AuditAction to display metadata (Archai semantic palette) */
 export const AUDIT_ACTION_META: Record<AuditAction, StatusMeta> = {
-  insert: { labelKey: "status.insert", label: "Insert", color: "#059669" },
-  update: { labelKey: "status.update", label: "Update", color: "#2563EB" },
-  delete: { labelKey: "status.delete", label: "Delete", color: "#DC2626" },
+  insert: { labelKey: "status.insert", label: "Insert", color: "#3DDC97" },
+  update: { labelKey: "status.update", label: "Update", color: "#2ED2FF" },
+  delete: { labelKey: "status.delete", label: "Delete", color: "#FF6B7A" },
 }
 
-/** Mapping from PaymentStatus to display metadata */
+/** Mapping from PaymentStatus to display metadata (Archai semantic palette) */
 export const PAYMENT_STATUS_META: Record<PaymentStatus, StatusMeta> = {
-  paid: { labelKey: "status.paid", label: "Paid", color: "#059669" },
-  unpaid: { labelKey: "status.unpaid", label: "Unpaid", color: "#D97706" },
+  paid: { labelKey: "status.paid", label: "Paid", color: "#3DDC97" },
+  unpaid: { labelKey: "status.unpaid", label: "Unpaid", color: "#E9A24F" },
 }
 
 // ---------------------------------------------------------------------------

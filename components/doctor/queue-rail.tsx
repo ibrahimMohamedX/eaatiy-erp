@@ -6,10 +6,26 @@ import { deriveAge, APPOINTMENT_STATUS_META } from "@/lib/types"
 import type { Appointment, Patient, User } from "@/lib/types"
 import { getDoctorInitials } from "@/lib/db/repositories/users"
 import { useT, resolveLabel } from "@/lib/i18n/use-t"
-import { statusBg } from "@/lib/color-utils"
 import { formatTime } from "@/lib/format-time"
 
 const CALL_AGAIN_COOLDOWN_MS = 2 * 60 * 1000 // 2 minutes
+
+/** Archai semantic tone classes per appointment status (10% tint + foreground) */
+const STATUS_PILL_TONES: Record<string, string> = {
+  waiting: "bg-warn/10 text-warn",
+  called: "bg-arc/10 text-arc",
+  in_consultation: "bg-arc/10 text-arc",
+  completed: "bg-ok/10 text-ok",
+  cancelled: "bg-err/10 text-err",
+}
+
+const STATUS_DOT_TONES: Record<string, string> = {
+  waiting: "bg-warn",
+  called: "bg-arc",
+  in_consultation: "bg-arc",
+  completed: "bg-ok",
+  cancelled: "bg-err",
+}
 
 type Props = {
   appointments: Appointment[]
@@ -84,51 +100,47 @@ function QueueCard({
       tabIndex={0}
       onClick={onSelect}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect() } }}
-      className={`w-full rounded-[12px] border p-4 text-left transition-colors cursor-pointer ${
+      className={`w-full cursor-pointer rounded-lg border p-4 text-start transition-colors duration-200 ${
         isSelected
-          ? "border-[#0F766E] bg-[#F9FAFB] dark:border-[#0F766E] dark:bg-[#374151]"
-          : "border-[#E5E7EB] bg-white hover:border-[#0F766E]/40 dark:border-[#374151] dark:bg-[#1F2937] dark:hover:border-[#0F766E]/60"
+          ? "border-arc/60 bg-steel/50"
+          : "border-line bg-card hover:border-mist"
       }`}
     >
       {/* Top row: queue# + name + status */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <span
-            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${
+            className={`flex size-7 shrink-0 items-center justify-center rounded-lg border font-mono text-xs font-bold ${
               isActive || isCalled
-                ? "border-[#0F766E] bg-[#0F766E] text-white"
-                : "border-[#E5E7EB] text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]"
+                ? "border-arc/60 text-arc"
+                : "border-line text-mist"
             }`}
           >
             {appointment.queue_number}
           </span>
-          <p className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">
+          <p className="text-sm font-semibold text-foreground">
             {patient.full_name}
           </p>
         </div>
 
         {/* Status pill */}
         <span
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-          style={{
-            backgroundColor: statusBg(meta.color),
-            color: meta.color,
-          }}
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_PILL_TONES[appointment.status]}`}
         >
-          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: meta.color }} />
+          <span className={`size-1.5 rounded-full ${STATUS_DOT_TONES[appointment.status]}`} />
           {resolveLabel(meta.labelKey, t)}
         </span>
       </div>
 
       {/* Detail row */}
-      <div className="mt-2 flex items-center gap-3 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
-        <span>
+      <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+        <span className="ltr-in-rtl font-mono">
           {age} yrs · {patient.gender}
         </span>
-        <span className="h-3 w-px bg-[#E5E7EB] dark:bg-[#374151]" />
+        <span className="h-3 w-px bg-line" />
         <span>{appointment.type === "new" ? t.doctor.newPatientLabel : t.doctor.followUpLabel}</span>
-        <span className="h-3 w-px bg-[#E5E7EB] dark:bg-[#374151]" />
-        <span>
+        <span className="h-3 w-px bg-line" />
+        <span className="ltr-in-rtl font-mono">
           {formatTime(appointment.scheduled_start)}
         </span>
       </div>
@@ -137,10 +149,10 @@ function QueueCard({
       <div className="mt-2.5 flex items-center justify-between gap-2">
         {doctor ? (
           <div className="flex items-center gap-1.5">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#E5E7EB] text-[10px] font-semibold text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
+            <span className="flex size-6 shrink-0 items-center justify-center rounded-xl border border-line text-[10px] font-semibold text-silver">
               {getDoctorInitials(doctor)}
             </span>
-            <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">{doctor.full_name}</span>
+            <span className="text-xs text-muted-foreground">{doctor.full_name}</span>
           </div>
         ) : (
           <div /> /* spacer so actions stay right-aligned */
@@ -151,14 +163,14 @@ function QueueCard({
             type="button"
             onClick={(e) => { e.stopPropagation(); onCallNext() }}
             disabled={hasInConsultation}
-            className={`inline-flex items-center gap-1 rounded-[6px] px-2 py-1 text-xs font-medium transition-colors ${
+            className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium transition-colors duration-200 ${
               hasInConsultation
-                ? "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed dark:bg-[#374151] dark:text-[#6B7280]"
-                : "bg-[#0F766E]/[0.08] text-[#0F766E] hover:bg-[#0F766E]/[0.16]"
+                ? "cursor-not-allowed bg-steel text-mist"
+                : "bg-arc/10 text-arc hover:bg-arc/20"
             }`}
             title={hasInConsultation ? t.doctor.alreadyInConsultationHint : undefined}
           >
-            <Play className="h-3.5 w-3.5" strokeWidth={1.5} />
+            <Play className="size-3.5" strokeWidth={1.75} />
             {t.receptionist.callNext}
           </button>
         )}
@@ -168,22 +180,22 @@ function QueueCard({
               type="button"
               onClick={(e) => { e.stopPropagation(); if (canCallAgain) onCallAgain() }}
               disabled={!canCallAgain}
-              className={`inline-flex items-center gap-1 rounded-[6px] px-2 py-1 text-xs font-medium transition-colors ${
+              className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium transition-colors duration-200 ${
                 canCallAgain
-                  ? "bg-[#9333EA]/[0.08] text-[#9333EA] hover:bg-[#9333EA]/[0.16]"
-                  : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed dark:bg-[#374151] dark:text-[#6B7280]"
+                  ? "bg-copper/10 text-copper hover:bg-copper/20"
+                  : "cursor-not-allowed bg-steel text-mist"
               }`}
               title={!canCallAgain ? `${callAgainSecondsLeft}s` : undefined}
             >
-              <PhoneCall className="h-3.5 w-3.5" strokeWidth={1.5} />
+              <PhoneCall className="size-3.5" strokeWidth={1.75} />
               {canCallAgain ? t.receptionist.callAgain : `${callAgainSecondsLeft}s`}
             </button>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onStartConsultation() }}
-              className="inline-flex items-center gap-1 rounded-[6px] bg-[#0F766E]/[0.08] px-2 py-1 text-xs font-medium text-[#0F766E] transition-colors hover:bg-[#0F766E]/[0.16]"
+              className="inline-flex items-center gap-1 rounded-lg bg-arc/10 px-2 py-1 text-xs font-medium text-arc transition-colors duration-200 hover:bg-arc/20"
             >
-              <Stethoscope className="h-3.5 w-3.5" strokeWidth={1.5} />
+              <Stethoscope className="size-3.5" strokeWidth={1.75} />
               {t.receptionist.startConsultation}
             </button>
           </div>
@@ -208,12 +220,10 @@ export function QueueRail({ appointments, patients, doctors, serverNow, selected
   return (
     <div className="flex h-full w-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-4 dark:border-[#374151]">
+      <div className="flex items-center justify-between border-b border-line px-4 py-4">
         <div className="flex items-center gap-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280] dark:text-[#9CA3AF]">
-            {t.doctor.myQueue}
-          </p>
-          <span className="flex h-5 items-center justify-center rounded-full bg-[#0F766E]/[0.12] px-1.5 text-[11px] font-semibold text-[#0F766E]">
+          <p className="archai-eyebrow">{t.doctor.myQueue}</p>
+          <span className="flex h-5 items-center justify-center rounded-full bg-arc/10 px-1.5 font-mono text-[11px] font-semibold text-arc ltr-in-rtl">
             {activeAppointments.length}
           </span>
         </div>
@@ -224,11 +234,11 @@ export function QueueRail({ appointments, patients, doctors, serverNow, selected
         {activeAppointments.length === 0 ? (
           <div className="flex h-full items-center justify-center p-6">
             <div className="text-center">
-              <Stethoscope className="mx-auto h-8 w-8 text-[#E5E7EB] dark:text-[#374151]" strokeWidth={1.5} />
-              <p className="mt-3 text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF]">
+              <Stethoscope className="mx-auto size-8 text-mist" strokeWidth={1.75} />
+              <p className="mt-3 text-sm font-medium text-foreground">
                 {t.doctor.queueEmpty}
               </p>
-              <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {t.doctor.queueEmptyDesc}
               </p>
             </div>

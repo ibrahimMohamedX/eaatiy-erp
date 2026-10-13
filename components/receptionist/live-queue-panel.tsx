@@ -4,7 +4,6 @@ import { useState, useTransition } from "react"
 import { RefreshCw, ChevronDown, Trash2 } from "lucide-react"
 import { deriveAge, APPOINTMENT_STATUS_META } from "@/lib/types"
 import type { Appointment, AppointmentStatus, Patient, User } from "@/lib/types"
-import { statusBg } from "@/lib/color-utils"
 import { useT, resolveLabel } from "@/lib/i18n/use-t"
 import { cancelAppointment } from "@/lib/actions/receptionist/cancel-appointment"
 import { getDoctorInitials } from "@/lib/db/repositories/users"
@@ -26,6 +25,23 @@ const STATUS_FILTER_KEY_MAP: Record<StatusFilter, string> = {
   "In Consultation": "status.inConsultation",
   "Completed": "status.completed",
   "Cancelled": "status.cancelled",
+}
+
+/** Archai status tones — waiting → warn · called/in_consultation → arc · completed → ok · cancelled → err */
+const STATUS_PILL_TONE: Record<AppointmentStatus, string> = {
+  waiting: "bg-warn/10 text-warn",
+  called: "bg-arc/10 text-arc",
+  in_consultation: "bg-arc/10 text-arc",
+  completed: "bg-ok/10 text-ok",
+  cancelled: "bg-err/10 text-err",
+}
+
+const STATUS_PILL_DOT: Record<AppointmentStatus, string> = {
+  waiting: "bg-warn",
+  called: "bg-arc",
+  in_consultation: "bg-arc",
+  completed: "bg-ok",
+  cancelled: "bg-err",
 }
 
 function resolveFilterLabel(f: StatusFilter, t: Record<string, any>): string {
@@ -53,13 +69,9 @@ function StatusPill({ status, t }: { status: AppointmentStatus; t: Record<string
   const label = resolveLabel(meta.labelKey, t)
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-      style={{
-        backgroundColor: statusBg(meta.color),
-        color: meta.color,
-      }}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_PILL_TONE[status]}`}
     >
-      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: meta.color }} />
+      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_PILL_DOT[status]}`} />
       {label}
     </span>
   )
@@ -109,34 +121,32 @@ export function LiveQueuePanel({ appointments, patients, doctors, onMutated }: P
   const doctorMap = new Map(doctors.map((d) => [d.id, d]))
 
   return (
-    <div className="flex flex-col rounded-[12px] border border-[#E5E7EB] bg-white dark:border-[#374151] dark:bg-[#1F2937]">
+    <div className="flex flex-col rounded-2xl border border-line bg-card">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#E5E7EB] dark:border-[#374151] px-5 py-4">
+      <div className="flex items-center justify-between border-b border-line px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <h2 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.receptionist.liveQueue}</h2>
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0F766E] opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0F766E]" />
-          </span>
+          <h2 className="text-sm font-semibold text-foreground">{t.receptionist.liveQueue}</h2>
+          {/* Static live dot — the screen's single pulse animation lives in the top bar */}
+          <span className="flex size-2 shrink-0 rounded-full bg-arc" aria-hidden />
         </div>
         <button
           type="button"
           onClick={refresh}
-          className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#E5E7EB] text-[#6B7280] transition-colors hover:text-[#111827] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
+          className="flex size-8 items-center justify-center rounded-lg border border-line text-mist transition-colors duration-200 hover:border-mist hover:text-foreground"
           aria-label={t.receptionist.refreshQueue}
         >
-          <RefreshCw className="h-4 w-4" strokeWidth={1.5} />
+          <RefreshCw className="size-4" strokeWidth={1.75} />
         </button>
       </div>
 
       {/* Filter row */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-[#E5E7EB] dark:border-[#374151] px-5 py-3">
+      <div className="flex flex-wrap items-center gap-3 border-b border-line px-5 py-3">
         <button
           type="button"
-          className="flex h-9 items-center gap-2 rounded-[8px] border border-[#E5E7EB] px-3 text-sm text-[#111827] dark:border-[#374151] dark:text-[#F9FAFB]"
+          className="flex h-9 items-center gap-2 rounded-lg border border-line px-3 text-sm font-medium text-silver transition-colors duration-200 hover:border-mist hover:text-foreground"
         >
           {t.common.allDoctors}
-          <ChevronDown className="h-4 w-4 text-[#6B7280] dark:text-[#9CA3AF]" strokeWidth={1.5} />
+          <ChevronDown className="size-4 text-mist" strokeWidth={1.75} />
         </button>
 
         <div className="flex flex-wrap items-center gap-1.5">
@@ -147,8 +157,8 @@ export function LiveQueuePanel({ appointments, patients, doctors, onMutated }: P
               onClick={() => setStatusFilter(f)}
               className={
                 f === statusFilter
-                  ? "flex h-8 items-center rounded-full bg-[#0F766E] px-3 text-xs font-medium text-white"
-                  : "flex h-8 items-center rounded-full border border-[#E5E7EB] bg-white px-3 text-xs font-medium text-[#6B7280] transition-colors hover:text-[#111827] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
+                  ? "flex h-8 items-center rounded-full bg-accent px-3 text-xs font-medium text-foreground"
+                  : "flex h-8 items-center rounded-full border border-line px-3 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:border-mist hover:text-foreground"
               }
             >
               {f === "All" ? f : resolveLabel(STATUS_FILTER_KEY_MAP[f], t)}
@@ -156,14 +166,14 @@ export function LiveQueuePanel({ appointments, patients, doctors, onMutated }: P
           ))}
         </div>
 
-        <div className="ml-auto flex h-9 items-center rounded-[8px] border border-[#E5E7EB] p-0.5 dark:border-[#374151]">
+        <div className="ms-auto flex h-9 items-center rounded-lg border border-line p-0.5">
           <button
             type="button"
             onClick={() => setTypeFilter("New")}
             className={
               typeFilter === "New"
-                ? "h-8 rounded-[6px] bg-[#0F766E] px-3 text-xs font-medium text-white"
-                : "h-8 rounded-[6px] px-3 text-xs font-medium text-[#6B7280] dark:text-[#9CA3AF]"
+                ? "h-8 rounded-lg bg-accent px-3 text-xs font-medium text-foreground"
+                : "h-8 rounded-lg px-3 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
             }
           >
             {t.receptionist.newPatient}
@@ -173,8 +183,8 @@ export function LiveQueuePanel({ appointments, patients, doctors, onMutated }: P
             onClick={() => setTypeFilter("Follow-up")}
             className={
               typeFilter === "Follow-up"
-                ? "h-8 rounded-[6px] bg-[#0F766E] px-3 text-xs font-medium text-white"
-                : "h-8 rounded-[6px] px-3 text-xs font-medium text-[#6B7280] dark:text-[#9CA3AF]"
+                ? "h-8 rounded-lg bg-accent px-3 text-xs font-medium text-foreground"
+                : "h-8 rounded-lg px-3 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
             }
           >
             {t.receptionist.followUp}
@@ -184,15 +194,12 @@ export function LiveQueuePanel({ appointments, patients, doctors, onMutated }: P
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] border-collapse text-left">
+        <table className="w-full min-w-[720px] border-collapse text-start">
           <thead>
-            <tr className="border-b border-[#E5E7EB] dark:border-[#374151]">
+            <tr className="border-b border-line">
               {t.receptionist.queueCols.map((h: string) => (
-                <th
-                  key={h}
-                  className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#6B7280] dark:text-[#9CA3AF]"
-                >
-                  {h}
+                <th key={h} className="px-4 py-2.5">
+                  <span className="archai-eyebrow !text-mist">{h}</span>
                 </th>
               ))}
             </tr>
@@ -209,47 +216,41 @@ export function LiveQueuePanel({ appointments, patients, doctors, onMutated }: P
               return (
                 <tr
                   key={apt.id}
-                  className="border-b border-[#E5E7EB] dark:border-[#374151] last:border-b-0"
-                  style={
-                    active
-                      ? {
-                          boxShadow:
-                            "inset 3px 0 0 0 #0F766E, 0 2px 8px rgba(17,24,39,0.06)",
-                        }
-                      : undefined
-                  }
+                  className={`border-b border-line last:border-b-0 ${active ? "bg-arc/10" : ""}`}
                 >
                   <td className="px-4 py-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#0F766E] text-xs font-bold text-[#0F766E]">
+                    <span className="flex size-7 items-center justify-center rounded-lg border border-arc/60 font-mono text-xs font-bold text-arc">
                       {apt.queue_number}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">
+                      <p className="text-sm font-semibold text-foreground">
                         {patient.full_name}
                       </p>
-                      <span className="inline-flex items-center rounded-full border border-[#E5E7EB] px-2 py-0.5 text-[11px] font-medium text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
+                      <span className="inline-flex items-center rounded-full border border-line px-2 py-0.5 font-mono text-[11px] font-medium text-muted-foreground">
                         {deriveAge(patient.date_of_birth)} yrs
                       </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#9CA3AF]">{patient.phone}</p>
+                    <p className="mt-0.5 font-mono text-xs text-mist ltr-in-rtl">{patient.phone}</p>
                   </td>
                   <td className="px-4 py-3">
                     {doctor && (
                       <div className="flex items-center gap-2">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#E5E7EB] text-[10px] font-semibold text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-steel text-[10px] font-semibold text-silver">
                           {getDoctorInitials(doctor)}
                         </span>
-                        <span className="text-sm text-[#111827] dark:text-[#F9FAFB]">{doctor.full_name}</span>
+                        <span className="text-sm text-foreground">{doctor.full_name}</span>
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-[#111827] dark:text-[#F9FAFB]">
-                    {formatTime(apt.scheduled_start)}
+                  <td className="px-4 py-3">
+                    <span className="font-mono text-sm text-foreground ltr-in-rtl">
+                      {formatTime(apt.scheduled_start)}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center rounded-full border border-[#E5E7EB] px-2.5 py-1 text-xs font-medium text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
+                    <span className="inline-flex items-center rounded-full border border-line px-2.5 py-1 text-xs font-medium text-muted-foreground">
                       {apt.type === "new" ? t.receptionist.newPatient : t.receptionist.followUp}
                     </span>
                   </td>
@@ -263,11 +264,11 @@ export function LiveQueuePanel({ appointments, patients, doctors, onMutated }: P
                           type="button"
                           onClick={() => handleCancel(apt.id)}
                           disabled={isPending}
-                          className="flex h-7 w-7 items-center justify-center rounded-[6px] text-[#6B7280] transition-colors hover:text-[#DC2626] dark:text-[#9CA3AF] dark:hover:text-[#DC2626]"
+                          className="flex size-7 items-center justify-center rounded-lg text-mist transition-colors duration-200 hover:bg-err/10 hover:text-err disabled:opacity-50"
                           aria-label={t.receptionist.cancelAppointment}
                           title={t.receptionist.cancelAppointment}
                         >
-                          <Trash2 className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                          <Trash2 className="size-[18px]" strokeWidth={1.75} />
                         </button>
                       </div>
                     )}

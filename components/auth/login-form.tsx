@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { login } from "@/lib/actions/auth/login"
 import type { LoginResult } from "@/lib/auth/types"
+import { ArchaiLogo } from "@/components/archai/archai-logo"
 
 export function LoginForm() {
   const router = useRouter()
@@ -42,38 +43,37 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-sm">
-      {/* Branding */}
-      <div className="mb-8 text-center">
-        <h1 className="text-xl font-bold text-[#111827] dark:text-[#F9FAFB]">
-          Clinic Management
-        </h1>
-        <p className="mt-1.5 text-sm text-[#6B7280] dark:text-[#9CA3AF]">
-          Sign in to your workspace
-        </p>
+    <div className="relative w-full max-w-sm animate-archai-fade-up">
+      {/* Brand lockup */}
+      <div className="mb-8 flex flex-col items-center gap-3">
+        <ArchaiLogo variant="lockup" size={56} />
+        <div className="text-center">
+          <p className="archai-eyebrow">PRIVATE PRACTICE SUITE</p>
+          <h1 className="mt-2 font-display text-xl font-bold text-foreground">
+            Sign in to your workspace
+          </h1>
+        </div>
       </div>
 
-      {/* Card */}
+      {/* Glass card (MOTIF 02) */}
       <form
         onSubmit={handleSubmit}
-        className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 shadow-sm dark:border-[#374151] dark:bg-[#1F2937]"
+        className="archai-glass rounded-2xl p-6 md:p-7"
       >
-        {/* Error banner */}
+        {/* Error alert */}
         {error && (
-          <div className="mb-4 flex items-start gap-2 rounded-[8px] bg-[#FEF2F2] p-3 text-sm text-[#DC2626] dark:bg-[#DC2626]/10">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
+          <div className="mb-5 flex items-start gap-2.5 rounded-lg bg-err/10 px-4 py-3 text-sm font-medium text-err" role="alert">
+            <AlertCircle className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Email field */}
-        <div className="space-y-4">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-[#6B7280] dark:text-[#9CA3AF]">
-              Email
-            </span>
+        <div className="space-y-5">
+          {/* Email field */}
+          <label className="flex flex-col gap-2">
+            <span className="text-[15px] font-medium text-silver">Email</span>
             <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" strokeWidth={1.5} />
+              <Mail className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-mist" strokeWidth={1.75} />
               <input
                 type="email"
                 value={email}
@@ -81,18 +81,17 @@ export function LoginForm() {
                 placeholder="helena.marsh@northgate.com"
                 autoComplete="email"
                 disabled={isPending}
-                className="h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white pl-10 pr-3 text-sm text-[#111827] placeholder:text-[#C7C7CD] dark:border-[#374151] dark:bg-[#111827] dark:text-[#F9FAFB] dark:placeholder:text-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20"
+                dir="ltr"
+                className="h-12 w-full rounded-lg border border-line bg-card ps-10 pe-3 text-base text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-ink"
               />
             </div>
           </label>
 
           {/* Password field */}
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-[#6B7280] dark:text-[#9CA3AF]">
-              Password
-            </span>
+          <label className="flex flex-col gap-2">
+            <span className="text-[15px] font-medium text-silver">Password</span>
             <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" strokeWidth={1.5} />
+              <Lock className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-mist" strokeWidth={1.75} />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
@@ -100,33 +99,34 @@ export function LoginForm() {
                 placeholder="••••••••"
                 autoComplete="current-password"
                 disabled={isPending}
-                className="h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white pl-10 pr-10 text-sm text-[#111827] placeholder:text-[#C7C7CD] dark:border-[#374151] dark:bg-[#111827] dark:text-[#F9FAFB] dark:placeholder:text-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20"
+                className="h-12 w-full rounded-lg border border-line bg-card ps-10 pe-11 text-base text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-ink"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] dark:hover:text-[#9CA3AF]"
+                className="absolute end-3 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-mist transition-colors hover:text-foreground"
                 tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4" strokeWidth={1.5} />
+                  <EyeOff className="size-4" strokeWidth={1.75} />
                 ) : (
-                  <Eye className="h-4 w-4" strokeWidth={1.5} />
+                  <Eye className="size-4" strokeWidth={1.75} />
                 )}
               </button>
             </div>
           </label>
         </div>
 
-        {/* Submit */}
+        {/* Submit — the single Arc button on this screen */}
         <button
           type="submit"
           disabled={isPending}
-          className="mt-6 flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-[#0F766E] text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary text-base font-semibold text-primary-foreground transition-all duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:bg-primary/85 hover:shadow-[0_0_24px_-6px_var(--arc)] active:translate-y-px disabled:pointer-events-none disabled:opacity-60"
         >
           {isPending ? (
             <>
-              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <svg className="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -137,14 +137,16 @@ export function LoginForm() {
           )}
         </button>
 
-        {/* Dev hint */}
-        <p className="mt-4 text-center text-xs text-[#9CA3AF]">
-          Seed users: helena.marsh@northgate.com · sara.reyes@northgate.com · amelia.monroe@northgate.com
-        </p>
-        <p className="mt-0.5 text-center text-xs text-[#9CA3AF]">
-          Default password: password123
-        </p>
+        {/* Dev hint — specs are always Mono */}
+        <div className="mt-5 text-center font-mono text-xs leading-relaxed text-mist">
+          <p>helena.marsh@northgate.com · sara.reyes@northgate.com · amelia.monroe@northgate.com</p>
+          <p className="mt-0.5">default password: password123</p>
+        </div>
       </form>
+
+      <p className="mt-6 text-center text-xs text-muted-foreground">
+        Clinic Management — an Archai Integrated System
+      </p>
     </div>
   )
 }

@@ -39,13 +39,13 @@ export function CurrentVisitTab({
       {/* Patient context banner */}
       <div className="flex items-center gap-4 px-5 pt-5">
         <div className="flex items-center gap-2">
-          <p className="text-sm text-[#6B7280] dark:text-[#9CA3AF]">
-            {appointment.type === "new" ? t.doctor.newPatientLabel : t.doctor.followUpLabel} · Queue #
-            {appointment.queue_number}
+          <p className="text-sm text-muted-foreground">
+            {appointment.type === "new" ? t.doctor.newPatientLabel : t.doctor.followUpLabel} ·{" "}
+            <span className="ltr-in-rtl font-mono">Queue #{appointment.queue_number}</span>
           </p>
         </div>
         {isCompleted && (
-          <span className="rounded-full bg-[#059669]/[0.12] px-2.5 py-0.5 text-xs font-medium text-[#059669]">
+          <span className="rounded-full bg-ok/10 px-2.5 py-0.5 text-xs font-medium text-ok">
             {resolveLabel("status.completed", t)}
           </span>
         )}
@@ -56,7 +56,7 @@ export function CurrentVisitTab({
         <div className="flex flex-col gap-2">
           <label
             htmlFor="field-chief_complaint"
-            className="text-[13px] font-medium text-[#111827] dark:text-[#F9FAFB]"
+            className="text-[15px] font-medium text-silver"
           >
             {t.doctor.chiefComplaint}
           </label>
@@ -67,8 +67,8 @@ export function CurrentVisitTab({
             onChange={(e) => setChiefComplaint(e.target.value)}
             readOnly={isCompleted}
             placeholder={isCompleted ? t.doctor.noNotes : t.doctor.chiefComplaintPlaceholder}
-            className={`w-full resize-y rounded-[8px] border border-[#E5E7EB] bg-white px-3.5 py-3 text-sm leading-relaxed text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-1 focus:ring-[#0F766E] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF] ${
-              isCompleted ? "bg-[#F9FAFB] dark:bg-[#111827]" : ""
+            className={`w-full resize-y rounded-lg border border-line px-3.5 py-3 text-sm leading-relaxed text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none ${
+              isCompleted ? "bg-steel/40" : "bg-card dark:bg-ink"
             }`}
           />
         </div>
@@ -77,7 +77,7 @@ export function CurrentVisitTab({
         <div className="flex flex-col gap-2">
           <label
             htmlFor="field-diagnosis"
-            className="text-[13px] font-medium text-[#111827] dark:text-[#F9FAFB]"
+            className="text-[15px] font-medium text-silver"
           >
             {t.doctor.diagnosis}
           </label>
@@ -88,8 +88,8 @@ export function CurrentVisitTab({
             onChange={(e) => setDiagnosis(e.target.value)}
             readOnly={isCompleted}
             placeholder={isCompleted ? t.doctor.noNotes : t.doctor.diagnosisPlaceholder}
-            className={`w-full resize-y rounded-[8px] border border-[#E5E7EB] bg-white px-3.5 py-3 text-sm leading-relaxed text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-1 focus:ring-[#0F766E] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF] ${
-              isCompleted ? "bg-[#F9FAFB] dark:bg-[#111827]" : ""
+            className={`w-full resize-y rounded-lg border border-line px-3.5 py-3 text-sm leading-relaxed text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none ${
+              isCompleted ? "bg-steel/40" : "bg-card dark:bg-ink"
             }`}
           />
         </div>
@@ -98,7 +98,7 @@ export function CurrentVisitTab({
         <div className="flex flex-col gap-2">
           <label
             htmlFor="field-notes"
-            className="text-[13px] font-medium text-[#111827] dark:text-[#F9FAFB]"
+            className="text-[15px] font-medium text-silver"
           >
             {t.doctor.doctorsNotes}
           </label>
@@ -109,8 +109,8 @@ export function CurrentVisitTab({
             onChange={(e) => setNotes(e.target.value)}
             readOnly={isCompleted}
             placeholder={isCompleted ? t.doctor.noNotes : t.doctor.notesPlaceholder}
-            className={`w-full resize-y rounded-[8px] border border-[#E5E7EB] bg-white px-3.5 py-3 text-sm leading-relaxed text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-1 focus:ring-[#0F766E] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF] ${
-              isCompleted ? "bg-[#F9FAFB] dark:bg-[#111827]" : ""
+            className={`w-full resize-y rounded-lg border border-line px-3.5 py-3 text-sm leading-relaxed text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none ${
+              isCompleted ? "bg-steel/40" : "bg-card dark:bg-ink"
             }`}
           />
         </div>
@@ -118,12 +118,12 @@ export function CurrentVisitTab({
 
       {/* Sticky footer */}
       {!isCompleted && (
-        <div className="sticky bottom-0 flex items-center justify-end gap-3 border-t border-[#E5E7EB] bg-white px-5 py-3.5 rounded-b-[12px] dark:border-[#374151] dark:bg-[#1F2937]">
+        <div className="sticky bottom-0 flex items-center justify-end gap-3 rounded-b-2xl border-t border-line bg-card px-5 py-3.5">
           <button
             type="button"
             disabled={isPending}
             onClick={() => onSaveDraft(chiefComplaint, diagnosis, notes || undefined)}
-            className="rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
+            className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-silver transition-colors duration-200 hover:border-mist hover:text-foreground disabled:opacity-50"
           >
             {t.doctor.saveDraft}
           </button>
@@ -131,7 +131,7 @@ export function CurrentVisitTab({
             type="button"
             disabled={isPending || !chiefComplaint.trim() || !diagnosis.trim()}
             onClick={() => onCompleteConsultation(chiefComplaint, diagnosis, notes || undefined)}
-            className="rounded-[8px] bg-[#0F766E] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/85 hover:shadow-[0_0_24px_-6px_var(--arc)] active:translate-y-px disabled:opacity-50"
           >
             {t.doctor.completeConsultation}
           </button>

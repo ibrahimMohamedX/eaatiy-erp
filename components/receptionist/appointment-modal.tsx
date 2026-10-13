@@ -33,9 +33,9 @@ const initialForm: FormData = {
   scheduled_time: "",
 }
 
-const labelClass = "mb-1 block text-xs font-medium text-[#111827] dark:text-[#F9FAFB]"
+const labelClass = "mb-1 block text-xs font-medium text-silver"
 const inputClass =
-  "h-10 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] placeholder:text-[#6B7280] focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:placeholder:text-[#9CA3AF]"
+  "h-10 w-full rounded-lg border border-line bg-card px-3 text-sm text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:[box-shadow:var(--glow-soft)] focus-visible:outline-none dark:bg-ink"
 
 export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
   const { t } = useT()
@@ -105,35 +105,35 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#6B7280]/20 pt-[10vh] px-4 dark:bg-[#111827]/60">
-      <div className="relative w-full max-w-lg rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_2px_8px_rgba(17,24,39,0.06)] dark:border-[#374151] dark:bg-[#1F2937] dark:shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/60 pt-[10vh] px-4 backdrop-blur-sm">
+      <div className="relative w-full max-w-lg animate-archai-fade-up rounded-2xl border border-line bg-card shadow-[0_8px_32px_-8px_rgba(0,0,0,0.28)]">
         {/* Modal header */}
-        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-6 py-4 dark:border-[#374151]">
+        <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F766E]/[0.08]">
-              <CalendarPlus className="h-[18px] w-[18px] text-[#0F766E]" strokeWidth={1.5} />
+            <div className="flex size-9 items-center justify-center rounded-xl bg-arc/10">
+              <CalendarPlus className="size-[18px] text-arc" strokeWidth={1.75} />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.receptionist.bookAppointmentTitle}</h2>
-              <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">{t.receptionist.bookAppointmentDesc}</p>
+              <h2 className="text-sm font-semibold text-foreground">{t.receptionist.bookAppointmentTitle}</h2>
+              <p className="text-xs text-muted-foreground">{t.receptionist.bookAppointmentDesc}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#6B7280] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
+            className="flex size-8 items-center justify-center rounded-lg text-mist transition-colors duration-200 hover:bg-accent hover:text-foreground"
           >
-            <X className="h-5 w-5" strokeWidth={1.5} />
+            <X className="size-5" strokeWidth={1.75} />
           </button>
         </div>
 
         {submitted ? (
           <div className="flex flex-col items-center py-12 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#059669]/[0.12]">
-              <CalendarPlus className="h-6 w-6 text-[#059669]" strokeWidth={1.5} />
+            <div className="flex size-12 items-center justify-center rounded-xl bg-ok/10">
+              <CalendarPlus className="size-6 text-ok" strokeWidth={1.75} />
             </div>
-            <p className="mt-4 text-sm font-semibold text-[#111827] dark:text-[#F9FAFB]">{t.receptionist.appointmentBooked}</p>
-            <p className="mt-1 text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+            <p className="mt-4 text-sm font-semibold text-foreground">{t.receptionist.appointmentBooked}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
               {t.receptionist.appointmentBookedDesc
                 .replace("{name}", form.patient_name)
                 .replace("{date}", form.scheduled_date)
@@ -143,7 +143,7 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
             <button
               type="button"
               onClick={handleClose}
-              className="mt-6 rounded-[8px] bg-[#0F766E] px-6 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              className="mt-6 rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-all duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:bg-primary/85 active:translate-y-px"
             >
               {t.common.done}
             </button>
@@ -156,12 +156,12 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
                 <label className={labelClass}>{t.entities.patient} *</label>
                 <div className="relative">
                   <Search
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280] dark:text-[#9CA3AF]"
-                    strokeWidth={1.5}
+                    className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-mist"
+                    strokeWidth={1.75}
                   />
                   <input
                     type="text"
-                    className={`${inputClass} pl-10`}
+                    className={`${inputClass} ps-10`}
                     placeholder={t.common.searchPatientPlaceholder}
                     value={patientQuery}
                     onChange={(e) => searchPatient(e.target.value)}
@@ -172,7 +172,7 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
                   />
                 </div>
                 {showPatientDropdown && patientResults.length > 0 && (
-                  <div className="absolute left-0 top-full z-20 mt-1 w-full overflow-hidden rounded-[8px] border border-[#E5E7EB] bg-white shadow-[0_2px_8px_rgba(17,24,39,0.06)] dark:border-[#374151] dark:bg-[#1F2937] dark:shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
+                  <div className="absolute start-0 top-full z-20 mt-1 w-full animate-archai-fade-in overflow-hidden rounded-lg border border-line bg-popover shadow-[0_8px_32px_-8px_rgba(0,0,0,0.28)]">
                     {patientResults.map((p) => {
                       const initials = p.full_name
                         .split(" ")
@@ -184,18 +184,16 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
                           key={p.id}
                           type="button"
                           onMouseDown={() => selectPatient(p)}
-                          className={`flex w-full items-center gap-3 border-b border-[#E5E7EB] px-3 py-2.5 text-left last:border-b-0 dark:border-[#374151] ${
-                            form.patient_id === p.id
-                              ? "bg-[#0F766E]/[0.06] dark:bg-[#0F766E]/[0.15]"
-                              : "hover:bg-[#F9FAFB] dark:hover:bg-[#374151]"
+                          className={`flex w-full items-center gap-3 border-b border-line px-3 py-2.5 text-start last:border-b-0 transition-colors duration-200 ${
+                            form.patient_id === p.id ? "bg-arc/10" : "hover:bg-accent"
                           }`}
                         >
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] text-[10px] font-semibold text-[#6B7280] dark:border-[#374151] dark:text-[#9CA3AF]">
+                          <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-steel text-[10px] font-semibold text-silver">
                             {initials}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">{p.full_name}</p>
-                            <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
+                            <p className="text-sm font-medium text-foreground">{p.full_name}</p>
+                            <p className="font-mono text-xs text-mist ltr-in-rtl">
                               {deriveAge(p.date_of_birth)} yrs · {p.phone}
                             </p>
                           </div>
@@ -226,14 +224,14 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
               {/* Visit type */}
               <div>
                 <label className={labelClass}>{t.receptionist.visitType}</label>
-                <div className="flex h-10 items-center rounded-[8px] border border-[#E5E7EB] bg-white p-0.5 dark:border-[#374151] dark:bg-[#1F2937]">
+                <div className="flex h-10 items-center rounded-lg border border-line bg-card p-0.5 dark:bg-ink">
                   <button
                     type="button"
                     onClick={() => update("type", "new")}
-                    className={`h-8 flex-1 rounded-[6px] text-xs font-medium transition-colors ${
+                    className={`h-8 flex-1 rounded-lg text-xs font-medium transition-colors duration-200 ${
                       form.type === "new"
-                        ? "bg-[#0F766E] text-white"
-                        : "text-[#6B7280] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {t.receptionist.newPatient}
@@ -241,10 +239,10 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
                   <button
                     type="button"
                     onClick={() => update("type", "follow_up")}
-                    className={`h-8 flex-1 rounded-[6px] text-xs font-medium transition-colors ${
+                    className={`h-8 flex-1 rounded-lg text-xs font-medium transition-colors duration-200 ${
                       form.type === "follow_up"
-                        ? "bg-[#0F766E] text-white"
-                        : "text-[#6B7280] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB]"
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {t.receptionist.followUp}
@@ -258,7 +256,7 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
                   <label className={labelClass}>{t.receptionist.date} *</label>
                   <input
                     type="date"
-                    className={inputClass}
+                    className={`${inputClass} ltr-in-rtl`}
                     value={form.scheduled_date}
                     min={today}
                     onChange={(e) => update("scheduled_date", e.target.value)}
@@ -268,7 +266,7 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
                   <label className={labelClass}>{t.receptionist.time} *</label>
                   <input
                     type="time"
-                    className={inputClass}
+                    className={`${inputClass} ltr-in-rtl`}
                     value={form.scheduled_time}
                     onChange={(e) => update("scheduled_time", e.target.value)}
                   />
@@ -277,11 +275,11 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-3 border-t border-[#E5E7EB] px-6 py-4 dark:border-[#374151]">
+            <div className="flex justify-end gap-3 border-t border-line px-6 py-4">
               <button
                 type="button"
                 onClick={handleClose}
-                className="rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F9FAFB] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F9FAFB] dark:hover:bg-[#374151]"
+                className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-silver transition-colors duration-200 hover:border-mist hover:text-foreground"
               >
                 {t.common.cancel}
               </button>
@@ -289,7 +287,7 @@ export function AppointmentModal({ open, onClose, onBooked, doctors }: Props) {
                 type="button"
                 onClick={handleSubmit}
                 disabled={!form.patient_id || !form.doctor_id || !form.scheduled_time || isPending}
-                className="rounded-[8px] bg-[#0F766E] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:bg-primary/85 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
               >
                 {isPending ? "…" : t.receptionist.newAppointment}
               </button>
