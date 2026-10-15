@@ -9,11 +9,10 @@
 
 import { cookies } from "next/headers"
 import { compare } from "bcryptjs"
-import { randomUUID } from "node:crypto"
 import { getIdentityPool } from "@/lib/db/connection"
 import { getUserByEmail } from "@/lib/db/repositories/identity/users"
 import { getTenantById } from "@/lib/db/repositories/identity/tenants"
-import { signAccessToken, signRefreshToken } from "@/lib/auth/jwt"
+import { signAccessToken } from "@/lib/auth/jwt"
 import type { LoginCredentials, LoginResult } from "@/lib/auth/types"
 
 // ---------------------------------------------------------------------------
@@ -28,7 +27,6 @@ const COOKIE_OPTIONS = {
 }
 
 const ACCESS_TOKEN_COOKIE = "meridian_access_token"
-const REFRESH_TOKEN_COOKIE = "meridian_refresh_token"
 
 // ---------------------------------------------------------------------------
 // Role → dashboard mapping
@@ -81,7 +79,8 @@ export async function login(
       }
     }
 
-    // 4. Create tokens
+    // 4. Create the access token (single-token sessions; 24h expiry.
+    //    A refresh-tokens table + rotation flow is a Phase 4 follow-up.)
     const accessToken = await signAccessToken({
       userId: user.id,
       tenantId: user.tenant_id,
@@ -91,21 +90,11 @@ export async function login(
       role: user.role,
     })
 
-    const refreshToken = await signRefreshToken(
-      user.id,
-      user.tenant_id,
-      randomUUID(),
-    )
-
-    // 5. Set cookies
+    // 5. Set cookie
     const cookieStore = await cookies()
     cookieStore.set(ACCESS_TOKEN_COOKIE, accessToken, {
       ...COOKIE_OPTIONS,
       maxAge: 24 * 3600, // 24 hours
-    })
-    cookieStore.set(REFRESH_TOKEN_COOKIE, refreshToken, {
-      ...COOKIE_OPTIONS,
-      maxAge: 7 * 24 * 3600, // 7 days
     })
 
     const redirectUrl = ROLE_REDIRECT[user.role] ?? "/receptionist"

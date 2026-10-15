@@ -12,6 +12,8 @@
 // ============================================================================
 
 import { getIdentityPool } from "@/lib/db/connection"
+import { insertSuperAdminAudit } from "@/lib/db/repositories/identity/superadmin-audit"
+import { isSuperAdminAuthed } from "@/lib/auth/super-admin"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,6 +30,9 @@ export type RevokeLicenseResult =
 export async function revokeLicense(
   tenantId: string,
 ): Promise<RevokeLicenseResult> {
+  if (!(await isSuperAdminAuthed())) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const pool = getIdentityPool()
 
@@ -45,6 +50,19 @@ export async function revokeLicense(
         success: false,
         error: "No license_state record found for this tenant",
       }
+    }
+
+    // Platform audit trail (never blocks the revocation)
+    try {
+      await insertSuperAdminAudit(pool, {
+        action: "update",
+        tenantId,
+        targetTable: "license_state",
+        targetRowId: tenantId,
+        summary: "Revoked license (locked_out = true)",
+      })
+    } catch (auditErr) {
+      console.error("super-admin audit write failed:", auditErr)
     }
 
     return {

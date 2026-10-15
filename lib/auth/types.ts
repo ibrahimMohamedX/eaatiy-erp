@@ -18,15 +18,6 @@ export interface AccessTokenPayload {
   exp: number // epoch seconds
 }
 
-/** Claims embedded in the refresh token JWT */
-export interface RefreshTokenPayload {
-  sub: string // user UUID
-  tenant_id: string
-  jti: string // unique token ID for revocation
-  iat: number
-  exp: number
-}
-
 /** Session data extracted from a verified access token */
 export interface Session {
   userId: string

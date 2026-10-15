@@ -1,8 +1,10 @@
 "use client"
 
+import { useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { Plus, LogOut } from "lucide-react"
 import { useT } from "@/lib/i18n/use-t"
-import { useAuth } from "@/lib/auth/auth-context"
+import { logoutSuperAdmin } from "@/lib/actions/super-admin/auth"
 import type { SuperAdminTab } from "@/app/super-admin/super-admin-page-shell"
 
 interface SuperAdminTopBarProps {
@@ -17,7 +19,8 @@ export function SuperAdminTopBar({
   onProvision,
 }: SuperAdminTopBarProps) {
   const { t } = useT()
-  const auth = useAuth()
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
   const sa = t["super-admin"]
   const tabLabels = sa.tabs as [string, string, string]
   const tabKeys: SuperAdminTab[] = ["tenants", "licensing", "audit"]
@@ -64,11 +67,17 @@ export function SuperAdminTopBar({
           </button>
         )}
 
-        {/* Logout */}
+        {/* Logout — clears the super_admin_key cookie; the page re-renders the gate */}
         <button
           type="button"
-          onClick={() => auth.logout()}
-          className="flex size-9 items-center justify-center rounded-lg text-mist transition-colors duration-200 hover:bg-err/10 hover:text-err"
+          onClick={() =>
+            startTransition(async () => {
+              await logoutSuperAdmin()
+              router.refresh()
+            })
+          }
+          disabled={isPending}
+          className="flex size-9 items-center justify-center rounded-lg text-mist transition-colors duration-200 hover:bg-err/10 hover:text-err disabled:opacity-50"
           aria-label={t.common.logOut}
           title={t.common.logOut}
         >

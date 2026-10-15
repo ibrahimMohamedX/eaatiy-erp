@@ -27,6 +27,8 @@ import {
   type IdentityTenant,
 } from "@/lib/db/repositories/identity/tenants"
 import { createUser, type CreateIdentityUserInput } from "@/lib/db/repositories/identity/users"
+import { insertSuperAdminAudit } from "@/lib/db/repositories/identity/superadmin-audit"
+import { isSuperAdminAuthed } from "@/lib/auth/super-admin"
 
 // ---------------------------------------------------------------------------
 // Input
@@ -97,6 +99,7 @@ CREATE TABLE IF NOT EXISTS appointments (
   completed_at TIMESTAMPTZ,
   cancelled_at TIMESTAMPTZ,
   cancellation_reason TEXT,
+  last_called_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -167,6 +170,9 @@ const BCRYPT_ROUNDS = 12
 export async function provisionTenant(
   input: ProvisionTenantInput,
 ): Promise<ProvisionTenantResult> {
+  if (!(await isSuperAdminAuthed())) {
+    return { success: false, error: "Unauthorized" }
+  }
   const identityPool = getIdentityPool()
 
   // 1. Validate slug
@@ -264,6 +270,19 @@ export async function provisionTenant(
 
       // 7. Update tenant status to active
       await updateTenantStatus(identityPool, tenantId, "activate")
+
+      // 8. Platform audit trail (never blocks the provisioning)
+      try {
+        await insertSuperAdminAudit(identityPool, {
+          action: "insert",
+          tenantId,
+          targetTable: "tenants",
+          targetRowId: tenantId,
+          summary: `Provisioned tenant "${input.clinicName}" (${input.clinicSlug}) · admin ${input.adminEmail}`,
+        })
+      } catch (auditErr) {
+        console.error("super-admin audit write failed:", auditErr)
+      }
     } finally {
       await tenantPool.end()
     }

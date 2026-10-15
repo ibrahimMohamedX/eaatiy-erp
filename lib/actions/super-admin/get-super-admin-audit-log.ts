@@ -3,14 +3,14 @@
 // ============================================================================
 // Server Action: Get Super Admin Audit Log
 // ============================================================================
-// For Phase 2C, this returns an empty list with a structure matching AuditLog.
-// In Phase 2D/2E, this will be extended to query an Identity DB audit table
-// that tracks all super admin actions (provision, suspend, license gen, etc.).
-//
-// The action is structured so UI components can consume it immediately
-// without changes when the backend implementation arrives.
+// Returns the platform-level audit trail from the Identity DB
+// (super_admin_audit): provisioning, tenant status transitions, license
+// generation/revocation. Consumer shape matches the tenant AuditLog type.
 // ============================================================================
 
+import { getIdentityPool } from "@/lib/db/connection"
+import { listSuperAdminAudit } from "@/lib/db/repositories/identity/superadmin-audit"
+import { isSuperAdminAuthed } from "@/lib/auth/super-admin"
 import type { AuditLog } from "@/lib/types"
 
 export type GetSuperAdminAuditLogResult =
@@ -18,10 +18,13 @@ export type GetSuperAdminAuditLogResult =
   | { success: false; error: string }
 
 export async function getSuperAdminAuditLog(): Promise<GetSuperAdminAuditLogResult> {
+  if (!(await isSuperAdminAuthed())) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
-    // Phase 2C: Return empty — Identity DB audit table comes in Phase 2D/3
-    // The UI component handles empty state gracefully with i18n messages.
-    return { success: true, data: [] }
+    const pool = getIdentityPool()
+    const logs = await listSuperAdminAudit(pool, 200)
+    return { success: true, data: logs }
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to fetch audit log"

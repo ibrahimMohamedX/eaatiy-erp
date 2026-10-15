@@ -11,14 +11,13 @@
 
 import { SignJWT, jwtVerify } from "jose"
 import { PUBLIC_KEY } from "@/lib/license/public-key"
-import type { AccessTokenPayload, RefreshTokenPayload, Session } from "./types"
+import type { AccessTokenPayload, Session } from "./types"
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const ACCESS_TOKEN_EXPIRY = "24h"
-const REFRESH_TOKEN_EXPIRY = "7d"
 const ISSUER = "meridian-clinic-cloud"
 
 // ---------------------------------------------------------------------------
@@ -108,26 +107,6 @@ export async function signAccessToken(session: Session): Promise<string> {
     .sign(privateKey)
 }
 
-export async function signRefreshToken(userId: string, tenantId: string, jti: string): Promise<string> {
-  const privateKey = await importPrivateKey()
-  const now = Math.floor(Date.now() / 1000)
-
-  const payload: RefreshTokenPayload = {
-    sub: userId,
-    tenant_id: tenantId,
-    jti,
-    iat: now,
-    exp: now + 7 * 24 * 3600, // 7 days
-  }
-
-  return await new SignJWT(payload as unknown as Record<string, unknown>)
-    .setProtectedHeader({ alg: "RS256", typ: "JWT" })
-    .setIssuer(ISSUER)
-    .setIssuedAt(now)
-    .setExpirationTime(payload.exp)
-    .sign(privateKey)
-}
-
 // ---------------------------------------------------------------------------
 // Verification
 // ---------------------------------------------------------------------------
@@ -141,17 +120,8 @@ export async function verifyAccessToken(token: string): Promise<AccessTokenPaylo
   return payload
 }
 
-export async function verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
-  const publicKey = await importPublicKey()
-  const { payload } = await jwtVerify<RefreshTokenPayload>(token, publicKey, {
-    issuer: ISSUER,
-    algorithms: ["RS256"],
-  })
-  return payload
-}
-
 // ---------------------------------------------------------------------------
-// Session extraction (used by middleware — no DB lookup needed)
+// Session extraction (used by proxy — no DB lookup needed)
 // ---------------------------------------------------------------------------
 
 export async function extractSession(token: string): Promise<Session | null> {

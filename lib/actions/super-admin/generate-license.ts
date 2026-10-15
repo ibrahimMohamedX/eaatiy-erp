@@ -16,6 +16,8 @@
 import { SignJWT } from "jose"
 import { getIdentityPool } from "@/lib/db/connection"
 import { getTenantById } from "@/lib/db/repositories/identity/tenants"
+import { insertSuperAdminAudit } from "@/lib/db/repositories/identity/superadmin-audit"
+import { isSuperAdminAuthed } from "@/lib/auth/super-admin"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -63,6 +65,9 @@ const TIER_DEFAULTS: Record<string, { maxUsers: number; features: string[] }> = 
 export async function generateLicense(
   input: GenerateLicenseInput,
 ): Promise<GenerateLicenseResult> {
+  if (!(await isSuperAdminAuthed())) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const pool = getIdentityPool()
 
@@ -130,6 +135,19 @@ export async function generateLicense(
        WHERE tenant_id = $1`,
       [input.tenantId, licenseToken, newSeq],
     )
+
+    // 6. Platform audit trail (never blocks the license issue)
+    try {
+      await insertSuperAdminAudit(pool, {
+        action: "update",
+        tenantId: input.tenantId,
+        targetTable: "license_state",
+        targetRowId: input.tenantId,
+        summary: `Issued license seq #${newSeq} · ${expiryDays}d · tier ${tenant.subscription_tier}`,
+      })
+    } catch (auditErr) {
+      console.error("super-admin audit write failed:", auditErr)
+    }
 
     return {
       success: true,

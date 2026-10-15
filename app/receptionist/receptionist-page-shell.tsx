@@ -7,6 +7,7 @@ import { TopBar } from "@/components/receptionist/top-bar"
 import { KpiRow } from "@/components/receptionist/kpi-row"
 import { LiveQueuePanel } from "@/components/receptionist/live-queue-panel"
 import { PatientSearchCard } from "@/components/receptionist/patient-search-card"
+import { PatientsTable } from "@/components/receptionist/patients-table"
 import { VitalsIntakeCard } from "@/components/receptionist/vitals-intake-card"
 import { PatientRegistrationModal } from "@/components/receptionist/patient-registration-modal"
 import { AppointmentModal } from "@/components/receptionist/appointment-modal"
@@ -58,7 +59,11 @@ export function ReceptionistPageShell({ initialData }: Props) {
               />
               <div className="flex min-w-0 flex-col gap-6">
                 <PatientSearchCard />
-                <VitalsIntakeCard />
+                <VitalsIntakeCard
+                  appointments={data?.appointments ?? []}
+                  patients={data?.patients ?? []}
+                  onMutated={refresh}
+                />
               </div>
             </section>
           </>
@@ -67,6 +72,7 @@ export function ReceptionistPageShell({ initialData }: Props) {
         return (
           <section className="flex flex-col gap-6">
             <PatientSearchCard />
+            <PatientsTable patients={data?.patients ?? []} />
           </section>
         )
       default:

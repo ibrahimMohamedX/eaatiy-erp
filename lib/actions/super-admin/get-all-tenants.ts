@@ -9,6 +9,7 @@
 import { getIdentityPool } from "@/lib/db/connection"
 import { getAllTenants } from "@/lib/db/repositories/identity/tenants"
 import type { IdentityTenant } from "@/lib/db/repositories/identity/tenants"
+import { isSuperAdminAuthed } from "@/lib/auth/super-admin"
 
 export type GetAllTenantsResult =
   | { success: true; data: IdentityTenant[] }
@@ -17,6 +18,9 @@ export type GetAllTenantsResult =
 export { type IdentityTenant }
 
 export async function getAllTenantsAction(): Promise<GetAllTenantsResult> {
+  if (!(await isSuperAdminAuthed())) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const pool = getIdentityPool()
     const tenants = await getAllTenants(pool)

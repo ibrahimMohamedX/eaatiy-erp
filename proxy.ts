@@ -1,7 +1,7 @@
 // ============================================================================
-// Middleware — JWT Enforcement & Role Routing — Phase 2D
+// Proxy — JWT Enforcement & Role Routing (Next 16 `proxy` convention)
 // ============================================================================
-// Runs on every request except static assets, /login, /super-admin.
+// Runs on every request except static assets, /login, /api/auth, /super-admin.
 //
 // Flow:
 //   1. Extract JWT from meridian_access_token cookie
@@ -11,6 +11,9 @@
 //   5. Enforce role-based route prefix matching
 //   6. Redirect unauthenticated users to /login
 //   7. Redirect / to the user's role dashboard
+//
+// NOTE: /super-admin passes through here without a JWT — the portal enforces
+// its own SUPER_ADMIN_KEY gate (see lib/auth/super-admin.ts).
 // ============================================================================
 
 import { NextResponse } from "next/server"
@@ -23,16 +26,22 @@ import type { AccessTokenPayload } from "@/lib/auth/types"
 // Route configuration
 // ---------------------------------------------------------------------------
 
-const PUBLIC_PATHS = [
+/** Paths that are public ONLY at the exact path (no sub-paths implied). */
+const PUBLIC_EXACT = new Set<string>([
   "/login",
-  "/api/auth",
-  "/_next",
+  "/super-admin",
   "/favicon.ico",
   "/icon-light-32x32.png",
   "/icon-dark-32x32.png",
   "/icon.svg",
   "/apple-icon.png",
-  "/super-admin",
+])
+
+/** Path prefixes that are public including their sub-paths (/prefix/*). */
+const PUBLIC_PREFIXES = [
+  "/api/auth",
+  "/_next",
+  "/archai", // public brand assets (used on the login screen)
 ]
 
 const ROLE_PATH_PREFIXES: Record<string, string> = {
@@ -50,11 +59,15 @@ const ROLE_REDIRECT: Record<string, string> = {
 const ACCESS_TOKEN_COOKIE = "meridian_access_token"
 
 // ---------------------------------------------------------------------------
-// Helper: check if path is public
+// Helper: check if path is public (exact match, or a registered prefix —
+// never a bare startsWith, which would leak /login-anything /super-admin-x)
 // ---------------------------------------------------------------------------
 
 function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.some((p) => pathname.startsWith(p))
+  if (PUBLIC_EXACT.has(pathname)) return true
+  return PUBLIC_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -88,8 +101,10 @@ async function importPublicKey(): Promise<CryptoKey> {
     .replace(pemFooter, "")
     .replace(/\s/g, "")
 
+  // Edge-runtime safe base64 decode — Buffer is NOT available in proxy.
+  // atob returns a binary string where each char code is one byte.
   const binaryDer = Uint8Array.from(
-    Buffer.from(pemContents, "base64").toString("binary"),
+    atob(pemContents),
     (c) => c.charCodeAt(0),
   )
 
@@ -103,13 +118,13 @@ async function importPublicKey(): Promise<CryptoKey> {
 }
 
 // ---------------------------------------------------------------------------
-// Middleware entry point
+// Proxy entry point
 // ---------------------------------------------------------------------------
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip middleware for public paths and super-admin
+  // Skip proxy for public paths (exact + registered prefixes only)
   if (isPublicPath(pathname)) {
     return NextResponse.next()
   }

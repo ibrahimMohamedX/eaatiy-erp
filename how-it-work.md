@@ -66,6 +66,17 @@ docker inspect --format "{{.State.Health.Status}}" meridian-dev-db
 
 ---
 
+## بوابة الـ Super Admin (Control Room)
+
+البوابة بتاعة `/super-admin` محمية بمفتاح من نوع `SUPER_ADMIN_KEY` محفوظ في `.env.local`:
+
+- من غير المفتاح (أو بمفتاح غلط) هتظهرلك **شاشة قفل** — والبوابة نفسها وكل الـ actions بتاعتها بترفض أي طلب من غير مفتاح صالح.
+- لما تفتح `http://localhost:3000/super-admin` هتلاقي خانة مفتاح — حط المفتاح وهو بيفتح جلسة لمدة 8 ساعات (httpOnly cookie).
+- **مفتاح الـ dev الحالي** موجود في `.env.local` عند سطر `SUPER_ADMIN_KEY=` — غيّره قبل أي deploy حقيقي.
+- كل عمليات البوابة (provision / suspend / revoke / license) بتتسجل تلقائيًا في جدول `super_admin_audit` في الـ Identity DB.
+
+---
+
 ## إيقاف كل حاجة
 
 ```powershell
