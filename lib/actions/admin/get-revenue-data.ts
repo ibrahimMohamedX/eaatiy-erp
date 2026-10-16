@@ -7,8 +7,9 @@
 // for the revenue tab.
 // ============================================================================
 
-import { getTenantPool } from "@/lib/db/connection"
+import { getTenantPool, getIdentityPool } from "@/lib/db/connection"
 import { getTenantContext } from "@/lib/auth/server-context"
+import { getDoctorsByTenant } from "@/lib/db/repositories/users"
 import {
   getRevenueSummary,
   getBillingsForAdmin,
@@ -48,10 +49,15 @@ export async function getRevenueData(
 
     const pool = getTenantPool(ctx.tenantSlug)
 
-    const [summary, billingRows] = await Promise.all([
+    // Doctor names live in the Identity DB (tenant DBs have no users table)
+    const identityPool = getIdentityPool()
+    const [summary, billingRows, doctors] = await Promise.all([
       getRevenueSummary(pool, ctx.tenantId, since, until),
       getBillingsForAdmin(pool, ctx.tenantId, since, until),
+      getDoctorsByTenant(identityPool, ctx.tenantId),
     ])
+
+    const doctorNameById = new Map(doctors.map((d) => [d.id, d.full_name]))
 
     const rows: RevenueBillingRow[] = billingRows.map((r) => ({
       billingId: r.billing_id,
@@ -63,7 +69,7 @@ export async function getRevenueData(
       queueNumber: r.appointment_queue_number,
       appointmentType: r.appointment_type,
       patientName: r.patient_name,
-      doctorName: r.doctor_name,
+      doctorName: doctorNameById.get(r.doctor_id) ?? r.doctor_id,
     }))
 
     return { success: true, data: { summary, rows } }

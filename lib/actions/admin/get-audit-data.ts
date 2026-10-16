@@ -7,7 +7,7 @@
 // by target table, action, actor, date range, and row ID search.
 // ============================================================================
 
-import { getTenantPool } from "@/lib/db/connection"
+import { getTenantPool, getIdentityPool } from "@/lib/db/connection"
 import { getTenantContext } from "@/lib/auth/server-context"
 import { getFilteredAuditLogs, type AuditLogFilters } from "@/lib/db/repositories/audit-logs"
 
@@ -46,7 +46,9 @@ export async function getAuditData(
     const actorMap = new Map<string, { full_name: string; role: string }>()
 
     if (actorIds.length > 0) {
-      const result = await pool.query<{ id: string; full_name: string; role: string }>(
+      // Actor accounts live in the Identity DB — tenant DBs have no users table
+      const identityPool = getIdentityPool()
+      const result = await identityPool.query<{ id: string; full_name: string; role: string }>(
         `SELECT id, full_name, role FROM users WHERE id = ANY($1::uuid[])`,
         [actorIds],
       )

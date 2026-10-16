@@ -1,11 +1,36 @@
 "use client"
 
-import { Activity, BarChart3, ScrollText, Users, CreditCard, Settings, LogOut } from "lucide-react"
+import {
+  Activity,
+  BarChart3,
+  ScrollText,
+  Users,
+  CreditCard,
+  CalendarDays,
+  LogOut,
+  UserCog,
+  Clock,
+  Wallet,
+  Receipt,
+  BadgeDollarSign,
+  ShieldCheck,
+} from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { useT } from "@/lib/i18n/use-t"
 import { useAuth } from "@/lib/auth/auth-context"
 
-export type AdminNavKey = "overview" | "revenue" | "appointments" | "doctors" | "audit"
+export type AdminNavKey =
+  | "overview"
+  | "revenue"
+  | "appointments"
+  | "doctors"
+  | "audit"
+  | "staff"
+  | "shifts"
+  | "salaries"
+  | "expenses"
+  | "policy"
+  | "supervisors"
 
 type NavItem = { icon: LucideIcon; label: string; key: AdminNavKey }
 
@@ -18,15 +43,29 @@ export function AdminSidebar({ activeKey, onNavigate }: Props) {
   const { t } = useT()
   const auth = useAuth()
 
+  // Labels come from the SAME source as the tab content (t.admin.tabs) so the
+  // sidebar can never drift from what the tabs actually show.
+  const tabs = t.admin.tabs as unknown as string[]
   const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     {
       label: t.sidebar.admin.admin,
       items: [
-        { icon: BarChart3, label: t.sidebar.admin.analytics, key: "overview" },
-        { icon: ScrollText, label: t.sidebar.admin.auditLog, key: "audit" },
-        { icon: Users, label: t.sidebar.admin.staffRoles, key: "doctors" },
-        { icon: CreditCard, label: t.sidebar.admin.billingOverview, key: "revenue" },
-        { icon: Settings, label: t.sidebar.admin.clinicSettings, key: "appointments" },
+        { icon: BarChart3, label: tabs[0] ?? "Overview", key: "overview" },
+        { icon: CreditCard, label: tabs[1] ?? "Revenue", key: "revenue" },
+        { icon: CalendarDays, label: tabs[2] ?? "Appointments", key: "appointments" },
+        { icon: Users, label: tabs[3] ?? "Doctors", key: "doctors" },
+        { icon: ScrollText, label: tabs[4] ?? "Audit", key: "audit" },
+      ],
+    },
+    {
+      label: t.admin.manage.staffTitle,
+      items: [
+        { icon: UserCog, label: tabs[5] ?? "Staff", key: "staff" },
+        { icon: Clock, label: tabs[6] ?? "Shifts", key: "shifts" },
+        { icon: Wallet, label: tabs[7] ?? "Salaries", key: "salaries" },
+        { icon: Receipt, label: tabs[8] ?? "Expenses", key: "expenses" },
+        { icon: BadgeDollarSign, label: tabs[9] ?? "Payment Policy", key: "policy" },
+        { icon: ShieldCheck, label: tabs[10] ?? "Supervisors", key: "supervisors" },
       ],
     },
   ]

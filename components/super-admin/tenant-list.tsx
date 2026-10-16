@@ -4,12 +4,15 @@ import { useState } from "react"
 import { useT } from "@/lib/i18n/use-t"
 import { updateTenantStatusAction } from "@/lib/actions/super-admin/update-tenant-status"
 import type { IdentityTenant, TenantStatus } from "@/lib/db/repositories/identity/tenants"
+import { TenantDetailModal } from "./tenant-detail-modal"
+import { SystemStateCard } from "./system-state-card"
 import {
   Building2,
   AlertTriangle,
   CheckCircle,
   PauseCircle,
   XCircle,
+  Eye,
 } from "lucide-react"
 
 interface TenantListProps {
@@ -49,6 +52,7 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
   const { t } = useT()
   const sa = t["super-admin"]
   const [loadingTenant, setLoadingTenant] = useState<string | null>(null)
+  const [detailTenantId, setDetailTenantId] = useState<string | null>(null)
   const [confirmState, setConfirmState] = useState<{
     tenantId: string
     action: "activate" | "suspend" | "revoke"
@@ -98,6 +102,9 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
 
   return (
     <div className="space-y-4">
+      {/* Platform-wide system state — operational / maintenance / locked */}
+      <SystemStateCard onMutated={onMutated} />
+
       {/* Section header */}
       <div className="flex items-center gap-3">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-arc/10">
@@ -172,6 +179,14 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
                   </td>
                   <td className="px-4 py-3 text-end">
                     <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => setDetailTenantId(tenant.id)}
+                        disabled={loadingTenant === tenant.id}
+                        className="inline-flex size-7 items-center justify-center rounded-lg text-arc transition-colors duration-200 hover:bg-arc/10 disabled:opacity-50"
+                        title={sa.viewDetails}
+                      >
+                        <Eye className="size-3.5" strokeWidth={1.75} />
+                      </button>
                       {tenant.status === "suspended" || tenant.status === "provisioning" ? (
                         <button
                           onClick={() =>
@@ -228,6 +243,13 @@ export function TenantList({ tenants, onMutated }: TenantListProps) {
           </table>
         )}
       </div>
+
+      {/* Clinic detail drill-down */}
+      <TenantDetailModal
+        tenantId={detailTenantId}
+        open={detailTenantId !== null}
+        onClose={() => setDetailTenantId(null)}
+      />
 
       {/* Confirmation dialog */}
       {confirmState && (

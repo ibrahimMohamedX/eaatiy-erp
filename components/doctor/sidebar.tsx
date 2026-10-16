@@ -1,6 +1,6 @@
 "use client"
 
-import { Stethoscope, LayoutDashboard, ListChecks, Users, CalendarDays, LogOut } from "lucide-react"
+import { Stethoscope, ListChecks, LogOut } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { useT } from "@/lib/i18n/use-t"
 import { useAuth } from "@/lib/auth/auth-context"
@@ -12,19 +12,10 @@ function buildNavGroups(t: Record<string, any>) {
   const s = t.sidebar?.doctor ?? {}
   return [
     {
-      labelKey: "sidebar.doctor.overview",
-      label: s.overview ?? "OVERVIEW",
-      items: [
-        { icon: LayoutDashboard, labelKey: "sidebar.doctor.overviewItem", label: s.overviewItem ?? "Overview" },
-      ],
-    },
-    {
       labelKey: "sidebar.doctor.clinical",
       label: s.clinical ?? "CLINICAL",
       items: [
         { icon: ListChecks, labelKey: "sidebar.doctor.myQueue", label: s.myQueue ?? "My Queue" },
-        { icon: Users, labelKey: "sidebar.doctor.patients", label: s.patients ?? "Patients" },
-        { icon: CalendarDays, labelKey: "sidebar.doctor.schedule", label: s.schedule ?? "Schedule" },
       ],
     },
   ]
@@ -32,10 +23,7 @@ function buildNavGroups(t: Record<string, any>) {
 
 // View identifiers are stable labelKey strings — locale-independent
 export type DoctorView =
-  | "sidebar.doctor.overviewItem"
-  | "sidebar.doctor.myQueue"
-  | "sidebar.doctor.patients"
-  | "sidebar.doctor.schedule"
+  "sidebar.doctor.myQueue"
 
 type Props = {
   activeView: DoctorView

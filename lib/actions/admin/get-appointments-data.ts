@@ -7,7 +7,7 @@
 // Supports date range filtering via `since` / `until` params.
 // ============================================================================
 
-import { getTenantPool } from "@/lib/db/connection"
+import { getTenantPool, getIdentityPool } from "@/lib/db/connection"
 import { getTodayQueue, getAppointmentsByDateRange } from "@/lib/db/repositories/appointments"
 import { getTenantContext } from "@/lib/auth/server-context"
 
@@ -37,6 +37,8 @@ export async function getAppointmentsData(
     }
 
     const pool = getTenantPool(ctx.tenantSlug)
+    // Staff accounts live in the Identity DB — tenant DBs have no users table
+    const identityPool = getIdentityPool()
 
     // If no date range specified, default to today's queue
     const appointments = since || until
@@ -56,7 +58,7 @@ export async function getAppointmentsData(
           )
         : Promise.resolve({ rows: [] }),
       doctorIds.length > 0
-        ? pool.query<{ id: string; full_name: string }>(
+        ? identityPool.query<{ id: string; full_name: string }>(
             `SELECT id, full_name FROM users WHERE id = ANY($1::uuid[])`,
             [doctorIds],
           )

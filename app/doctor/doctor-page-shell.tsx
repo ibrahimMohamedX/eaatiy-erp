@@ -5,7 +5,6 @@ import { DoctorSidebar } from "@/components/doctor/sidebar"
 import type { DoctorView } from "@/components/doctor/sidebar"
 import { QueueRail } from "@/components/doctor/queue-rail"
 import { Workspace } from "@/components/doctor/workspace"
-import { Users, CalendarDays } from "lucide-react"
 import { getPatientData } from "@/lib/actions/doctor/get-patient-data"
 import type { PatientData } from "@/lib/actions/doctor/get-patient-data"
 import type { Appointment, Patient, User } from "@/lib/types"
@@ -156,57 +155,6 @@ export function DoctorPageShell({ initialData }: Props) {
               />
             </section>
           </>
-        )
-
-      case "sidebar.doctor.overviewItem":
-        return (
-          <section className="flex h-full w-full flex-1 items-center justify-center">
-            <div className="text-center">
-              <div className="mx-auto flex size-14 items-center justify-center rounded-xl bg-arc/10">
-                <Users className="size-7 text-arc" strokeWidth={1.75} />
-              </div>
-              <p className="mt-4 text-sm font-medium text-foreground">
-                {t.doctor.overviewPlaceholder}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t.doctor.overviewDesc}
-              </p>
-            </div>
-          </section>
-        )
-
-      case "sidebar.doctor.patients":
-        return (
-          <section className="flex h-full w-full flex-1 items-center justify-center">
-            <div className="text-center">
-              <div className="mx-auto flex size-14 items-center justify-center rounded-xl bg-arc/10">
-                <Users className="size-7 text-arc" strokeWidth={1.75} />
-              </div>
-              <p className="mt-4 text-sm font-medium text-foreground">
-                {t.doctor.patientsPlaceholder}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t.doctor.patientsDesc}
-              </p>
-            </div>
-          </section>
-        )
-
-      case "sidebar.doctor.schedule":
-        return (
-          <section className="flex h-full w-full flex-1 items-center justify-center">
-            <div className="text-center">
-              <div className="mx-auto flex size-14 items-center justify-center rounded-xl bg-arc/10">
-                <CalendarDays className="size-7 text-arc" strokeWidth={1.75} />
-              </div>
-              <p className="mt-4 text-sm font-medium text-foreground">
-                {t.doctor.schedulePlaceholder}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t.doctor.scheduleDesc}
-              </p>
-            </div>
-          </section>
         )
 
       default:

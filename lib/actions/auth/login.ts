@@ -36,6 +36,7 @@ const ROLE_REDIRECT: Record<string, string> = {
   admin: "/admin",
   doctor: "/doctor",
   receptionist: "/receptionist",
+  supervisor: "/supervisor",
 }
 
 // ---------------------------------------------------------------------------
@@ -76,6 +77,22 @@ export async function login(
       return {
         success: false,
         error: `This clinic's account is ${tenant.status}. Contact support.`,
+      }
+    }
+
+    // 2b. Platform system state — the super admin may have locked the whole
+    // system (maintenance/locked). Deny logins during that window.
+    const sysState = await pool.query<{ state: string }>(
+      `SELECT state FROM system_state WHERE id = 1`,
+    )
+    const platformState = sysState.rows[0]?.state ?? "operational"
+    if (platformState !== "operational") {
+      return {
+        success: false,
+        error:
+          platformState === "locked"
+            ? "The system is currently locked by the operator. Please try again later."
+            : "The system is under maintenance. Please try again later.",
       }
     }
 

@@ -48,12 +48,14 @@ const ROLE_PATH_PREFIXES: Record<string, string> = {
   admin: "/admin",
   doctor: "/doctor",
   receptionist: "/receptionist",
+  supervisor: "/supervisor",
 }
 
 const ROLE_REDIRECT: Record<string, string> = {
   admin: "/admin",
   doctor: "/doctor",
   receptionist: "/receptionist",
+  supervisor: "/supervisor",
 }
 
 const ACCESS_TOKEN_COOKIE = "meridian_access_token"

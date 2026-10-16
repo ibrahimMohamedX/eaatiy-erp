@@ -9,7 +9,7 @@
 // Core Enums
 // ---------------------------------------------------------------------------
 
-export type UserRole = "admin" | "doctor" | "receptionist"
+export type UserRole = "admin" | "doctor" | "receptionist" | "supervisor"
 
 export type AppointmentStatus =
   | "waiting"

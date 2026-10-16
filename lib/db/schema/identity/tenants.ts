@@ -7,6 +7,11 @@
 
 import { pgTable, uuid, varchar, text, timestamp } from "drizzle-orm/pg-core"
 
+/** Subscription tiers — runtime const lives here (NOT in "use server" files,
+ *  which may only export async functions). */
+export const SUBSCRIPTION_TIERS = ["trial", "basic", "premium"] as const
+export type SubscriptionTier = (typeof SUBSCRIPTION_TIERS)[number]
+
 export const tenants = pgTable("tenants", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),

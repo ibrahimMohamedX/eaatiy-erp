@@ -155,6 +155,104 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   changes JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Staff Members (doctors/receptionists/supervisors + cleaners, security, …)
+CREATE TABLE IF NOT EXISTS staff_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL,
+  user_id UUID, -- Identity DB users.id (loose link, no cross-DB FK)
+  full_name VARCHAR(255) NOT NULL,
+  staff_type VARCHAR(30) NOT NULL DEFAULT 'other',
+  job_title VARCHAR(120),
+  phone VARCHAR(50),
+  monthly_salary DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  hired_at DATE,
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_staff_members_tenant ON staff_members (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_staff_members_user ON staff_members (user_id);
+
+-- Shifts (weekly template per staff member)
+CREATE TABLE IF NOT EXISTS shifts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL,
+  staff_member_id UUID NOT NULL REFERENCES staff_members(id),
+  day_of_week INT NOT NULL, -- 0=Sunday … 6=Saturday
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_shifts_tenant ON shifts (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_shifts_staff ON shifts (staff_member_id);
+
+-- Salaries (monthly payroll per staff member)
+CREATE TABLE IF NOT EXISTS salaries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL,
+  staff_member_id UUID NOT NULL REFERENCES staff_members(id),
+  period_month DATE NOT NULL, -- first day of month
+  base_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  bonuses DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  deductions DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  status VARCHAR(20) NOT NULL DEFAULT 'draft', -- draft|approved|paid
+  paid_at TIMESTAMPTZ,
+  notes VARCHAR(500),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_salaries_tenant ON salaries (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_salaries_staff ON salaries (staff_member_id);
+CREATE INDEX IF NOT EXISTS idx_salaries_period ON salaries (tenant_id, period_month);
+
+-- Expenses (clinic operating expenses)
+CREATE TABLE IF NOT EXISTS expenses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL,
+  category VARCHAR(30) NOT NULL DEFAULT 'other',
+  description TEXT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  expense_date DATE NOT NULL,
+  recorded_by UUID, -- Identity DB users.id
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_expenses_tenant ON expenses (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses (tenant_id, expense_date);
+
+-- Payment Policies (singleton per tenant — admin-controlled payment rules)
+CREATE TABLE IF NOT EXISTS payment_policies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL UNIQUE,
+  payer_type VARCHAR(30) NOT NULL DEFAULT 'patient', -- patient|companion|organization
+  new_consultation_requires_payment BOOLEAN NOT NULL DEFAULT true,
+  followup_requires_payment BOOLEAN NOT NULL DEFAULT false,
+  new_consultation_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  followup_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  updated_by UUID, -- Identity DB users.id
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Supervisor Scopes (admin-defined access matrix per supervisor user)
+CREATE TABLE IF NOT EXISTS supervisor_scopes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL,
+  user_id UUID NOT NULL, -- Identity DB users.id (role=supervisor)
+  section VARCHAR(30) NOT NULL, -- queue|patients|appointments|expenses|salaries|staff|shifts
+  can_view BOOLEAN NOT NULL DEFAULT true,
+  can_edit BOOLEAN NOT NULL DEFAULT false,
+  assigned_by UUID, -- Identity DB users.id (admin)
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_supervisor_scopes_tenant ON supervisor_scopes (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_supervisor_scopes_user ON supervisor_scopes (tenant_id, user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_supervisor_scope_section ON supervisor_scopes (tenant_id, user_id, section);
 ` as const
 
 // ---------------------------------------------------------------------------

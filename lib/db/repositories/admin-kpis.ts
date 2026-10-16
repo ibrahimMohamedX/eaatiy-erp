@@ -55,16 +55,23 @@ export interface AppointmentsPerDoctorPoint {
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Builds a date-range WHERE fragment for admin aggregation queries.
+ * IMPORTANT: callers bind tenant_id as $1 and append these params after it,
+ * so the fragment's placeholders must START at $2 — otherwise Postgres
+ * compares the tenant UUID against a timestamp column
+ * ("operator does not exist: timestamp with time zone >= uuid").
+ */
 function dateWhereClause(since?: string, until?: string): { clause: string; params: unknown[] } {
   const conditions: string[] = []
   const params: unknown[] = []
   if (since) {
     params.push(since)
-    conditions.push(`created_at >= $${params.length}`)
+    conditions.push(`created_at >= $${params.length + 1}`)
   }
   if (until) {
     params.push(until)
-    conditions.push(`created_at < $${params.length}`)
+    conditions.push(`created_at < $${params.length + 1}`)
   }
   return {
     clause: conditions.length > 0 ? `AND ${conditions.join(" AND ")}` : "",
@@ -335,13 +342,15 @@ export async function getBillingsForAdmin(
     appointment_queue_number: number
     appointment_type: string
     patient_name: string
-    doctor_name: string
+    doctor_id: string
   }>
 > {
   const { clause, params } = dateWhereClause(since, until)
   // Replace bare created_at refs with b.created_at for the join context
   const billingsClause = clause.replace(/created_at/g, "b.created_at")
 
+  // NOTE: no JOIN on users — the users table lives in the Identity DB, not in
+  // tenant databases. The action layer enriches doctor names separately.
   const result = await pool.query(
     `SELECT
        b.id as billing_id,
@@ -353,11 +362,10 @@ export async function getBillingsForAdmin(
        a.queue_number as appointment_queue_number,
        a.type as appointment_type,
        p.full_name as patient_name,
-       u.full_name as doctor_name
+       a.doctor_id
      FROM billings b
      JOIN appointments a ON a.id = b.appointment_id AND a.tenant_id = b.tenant_id
      JOIN patients p ON p.id = a.patient_id AND p.tenant_id = b.tenant_id
-     JOIN users u ON u.id = a.doctor_id
      WHERE b.tenant_id = $1 ${billingsClause}
      ORDER BY b.created_at DESC
      LIMIT 200`,

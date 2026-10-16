@@ -6,7 +6,7 @@
 // Aggregates KPI and chart data for the admin overview + doctors tabs.
 // ============================================================================
 
-import { getTenantPool } from "@/lib/db/connection"
+import { getTenantPool, getIdentityPool } from "@/lib/db/connection"
 import { getTenantContext } from "@/lib/auth/server-context"
 import {
   type RevenueSummary,
@@ -25,7 +25,6 @@ import {
   getAppointmentsPerDoctorOverTime,
   getDoctorPerformance,
 } from "@/lib/db/repositories/admin-kpis"
-import { getIdentityPool } from "@/lib/db/connection"
 
 export interface DashboardData {
   revenueSummary: RevenueSummary
@@ -75,12 +74,13 @@ export async function getDashboardData(
       getDoctorPerformance(pool, ctx.tenantId, since, until),
     ])
 
-    // Resolve doctor names from the identity/users DB
+    // Resolve doctor names from the Identity DB (tenant DBs have no users table)
     const doctorIds = [...new Set(doctorPerformance.map((d) => d.doctorId))]
     let doctorMap = new Map<string, { full_name: string; email: string }>()
 
     if (doctorIds.length > 0) {
-      const doctorResult = await pool.query<{ id: string; full_name: string; email: string }>(
+      const identityPool = getIdentityPool()
+      const doctorResult = await identityPool.query<{ id: string; full_name: string; email: string }>(
         `SELECT id, full_name, email FROM users WHERE id = ANY($1::uuid[])`,
         [doctorIds],
       )

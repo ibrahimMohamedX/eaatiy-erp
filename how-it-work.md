@@ -49,7 +49,8 @@ docker inspect --format "{{.State.Health.Status}}" meridian-dev-db
 |---|---|---|
 | `helena.marsh@northgate.com` | Receptionist | الاستقبال + الطابور الحي |
 | `sara.reyes@northgate.com` | Doctor | شاشة الكشف (Queue + Vitals + Rx) |
-| `amelia.monroe@northgate.com` | Admin | التحليلات + الإيرادات + Audit |
+| `amelia.monroe@northgate.com` | Admin | التحليلات + الإيرادات + Audit + إدارة الموظفين/الشيفتات/المرتبات/المصاريف/سياسة الدفع/المشرفين |
+| `nadia.fouad@northgate.com` | Supervisor | بوابة المشرف — أقسام محددة من المدير (queue + patients + salaries عرض، expenses عرض وتعديل) |
 
 الـ Middleware بيوجّهك تلقائيًا لشاشة دورك بعد تسجيل الدخول.
 
@@ -73,7 +74,19 @@ docker inspect --format "{{.State.Health.Status}}" meridian-dev-db
 - من غير المفتاح (أو بمفتاح غلط) هتظهرلك **شاشة قفل** — والبوابة نفسها وكل الـ actions بتاعتها بترفض أي طلب من غير مفتاح صالح.
 - لما تفتح `http://localhost:3000/super-admin` هتلاقي خانة مفتاح — حط المفتاح وهو بيفتح جلسة لمدة 8 ساعات (httpOnly cookie).
 - **مفتاح الـ dev الحالي** موجود في `.env.local` عند سطر `SUPER_ADMIN_KEY=` — غيّره قبل أي deploy حقيقي.
-- كل عمليات البوابة (provision / suspend / revoke / license) بتتسجل تلقائيًا في جدول `super_admin_audit` في الـ Identity DB.
+- كل عمليات البوابة (provision / suspend / revoke / license / تغيير الاشتراك / حالة النظام) بتتسجل تلقائيًا في جدول `super_admin_audit` في الـ Identity DB.
+
+### اللي البوابة بتعمله
+
+| الإمكانية | التفاصيل |
+|---|---|
+| حالة العيادات المشتركة | قايمة كل العيادات مع الـ status والـ tier وتاريخ الإنشاء + زرار 👁 لتفاصيل حية من قاعدة كل عيادة (موظفين، مرضى، مواعيد اليوم، إيرادات، مصاريف، رواتب معلقة) |
+| الاشتراك — تفعيل وإلغاء | أزرار activate / suspend / revoke لكل عيادة من القايمة |
+| تغيير الاشتراك | من زرار التفاصيل: ترقية/تخفيض الـ tier (trial / basic / premium) في أي وقت |
+| حالة النظام | كارت **System State** فوق القايمة: يعمل / صيانة / مقفول — القفل بيتطبق على كل العيادات أوتوماتيكيًا خلال ≤ 15 ثانية حتى لو اليوزر عنده token صالح، والـ login كمان بيرفض |
+| القفل الأوتوماتيكي للعيادات | لو عيادة اتوقفت (suspend/revoke)، كل الـ server actions بتاعتها بتترفض فورًا — مش مستنية انتهاء الـ token |
+| التراخيص | توليد / إلغاء license لكل عيادة (Licensing tab) |
+| سجل التدقيق | كل حركة للسوبر أدمن مسجلة في super_admin_audit (Audit tab) |
 
 ---
 
